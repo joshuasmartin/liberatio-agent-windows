@@ -1,20 +1,39 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Text;
 
 namespace LiberatioService
 {
-    class Inventory
+    public class Inventory
     {
+        public String uuid { get; set; }
         public String name { get; set; }
         public String operating_system { get; set; }
+        public String location { get; set; }
+        public String role { get; set; }
+        public String model_number { get; set; }
+        public String serial_number { get; set; }
+        public List<Application> applications { get; set; }
 
         public void populate()
         {
+            EventLog.WriteEntry("LiberatioAgent", "Performing Inventory", EventLogEntryType.Information);
+
+            uuid = ConfigurationManager.AppSettings["uuid"].Trim(); // from config
             name = System.Environment.MachineName;
             operating_system = getOperatingSystem();
+            location = ConfigurationManager.AppSettings["location"].Trim(); // from config
+            role = ConfigurationManager.AppSettings["role"].Trim(); // from config
+            model_number = getModelNumber();
+            applications = getApplications();
+
+            EventLog.WriteEntry("LiberatioAgent", "YAYY");
         }
 
         /// <summary>
@@ -32,6 +51,72 @@ namespace LiberatioService
                 break;
             }
             return result;
+        }
+
+        /// <summary>
+        /// Acquires the computer's manufacturer and model number
+        /// and concatenates it into a single string.
+        /// </summary>
+        /// <returns>The computer manufacturer and model number</returns>
+        private String getModelNumber()
+        {
+            string result = string.Empty;
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Manufacturer,Model FROM Win32_ComputerSystem");
+            foreach (ManagementObject os in searcher.Get())
+            {
+                result = String.Format("{0} {1}", os["Manufacturer"], os["Model"]);
+                break;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Parses the registry to determine installed applications. Looks under
+        /// both the common HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+        /// and the HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall
+        /// </summary>
+        /// <returns>A List of installed applications</returns>
+        private List<Application> getApplications()
+        {
+            List<Application> list = new List<Application>();
+
+            String key32 = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            String key64 = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
+
+            try
+            {
+                // get installed applications on 32 bit machines
+                using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(key32))
+                {
+                    foreach (String subkeyName in key.GetSubKeyNames())
+                    {
+                        String _name = key.OpenSubKey(subkeyName).GetValue("DisplayName", "").ToString();
+                        String _version = key.OpenSubKey(subkeyName).GetValue("DisplayVersion", "").ToString();
+                        String _publisher = key.OpenSubKey(subkeyName).GetValue("Publisher", "").ToString();
+
+                        list.Add(new Application(_name, _version, _publisher));
+                    }
+                }
+
+                // get installed applications on 64 bit machines
+                using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(key64))
+                {
+                    foreach (String subkeyName in key.GetSubKeyNames())
+                    {
+                        String _name = key.OpenSubKey(subkeyName).GetValue("DisplayName", "").ToString();
+                        String _version = key.OpenSubKey(subkeyName).GetValue("DisplayVersion", "").ToString();
+                        String _publisher = key.OpenSubKey(subkeyName).GetValue("Publisher", "").ToString();
+
+                        list.Add(new Application(_name, _version, _publisher));
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
+
+            return list;
         }
     }
 }

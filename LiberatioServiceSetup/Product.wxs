@@ -46,6 +46,9 @@
         <ServiceControl Id="LiberatioServiceControl"
                         Start="install" Stop="both" Remove="both" Name="LiberatioServiceExe" Wait="no" />
       </Component>
+      <Component Id="LiberatioConfigurationComponent" Guid="">
+        <File Id="LiberatioConfiguration" Source="$(var.LiberatioService.TargetDir)\LiberatioService.exe.config" KeyPath="yes" />
+      </Component>
 		</ComponentGroup>
 	</Fragment>
 </Wix>
