@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+	<Product Id="2413543B-9EBC-49C7-813A-F200796AF300" Name="Liberatio Agent" Language="1033" Version="1.0.0.0" Manufacturer="Liberatio" UpgradeCode="6525ad46-125e-45f0-86b7-ab48e418c4a1">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <!-- Require .NET Framework 3.5 -->
+    <PropertyRef Id="NETFRAMEWORK35"/>
+
+    <!--<Icon Id="icon.ico" SourceFile="MySourceFiles\icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />-->
+
+    <Condition Message="This application requires .NET Framework 3.5. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK35]]>
+    </Condition>
+    
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+		<Feature Id="ProductFeature" Title="Liberatio Service" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="Liberatio Agent" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="LiberatioServiceComponent" Guid="1082D4DE-8A2D-4744-9A09-FC73AB49EFF5">
+        
+        <!-- Executable File -->
+        <File Id="LiberatioServiceExeFile" Source="$(var.LiberatioService.TargetPath)" KeyPath="yes" />
+        
+        <!-- Installs the Service -->
+        <ServiceInstall Id="LiberatioServiceInstall" Type="ownProcess" Name="LiberatioServiceExe"
+                        DisplayName="Liberatio Agent"
+                        Start="auto" Account="LocalSystem" ErrorControl="normal" />
+        
+        <!-- Starts the Service -->
+        <ServiceControl Id="LiberatioServiceControl"
+                        Start="install" Stop="both" Remove="both" Name="LiberatioServiceExe" Wait="no" />
+      </Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>
