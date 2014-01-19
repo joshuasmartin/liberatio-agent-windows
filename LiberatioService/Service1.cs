@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
 using System.Timers;
@@ -56,6 +57,35 @@ namespace LiberatioService
         protected override void OnStop()
         {
             t.Enabled = false;
+        }
+
+        protected override void OnSessionChange(SessionChangeDescription changeDescription)
+        {
+            switch(changeDescription.Reason)
+            {
+                case SessionChangeReason.SessionLogon:
+                    // current user
+                    WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                    WindowsPrincipal principal = new WindowsPrincipal(identity);
+
+                    // if user is an administrator, start the gui notification icon
+                    if (principal.IsInRole(WindowsBuiltInRole.Administrator))
+                    {
+                        Process p = new Process();
+
+                        ProcessStartInfo i = new ProcessStartInfo();
+                        i.FileName = "LiberatioTray.exe";
+                        i.UseShellExecute = false;
+                        i.UserName = identity.Name;
+                        p.StartInfo = i;
+
+                        p.Start();
+                    }
+
+                    break;
+            }
+
+            base.OnSessionChange(changeDescription);
         }
 
         // Specify what you want to happen when the Elapsed event is 

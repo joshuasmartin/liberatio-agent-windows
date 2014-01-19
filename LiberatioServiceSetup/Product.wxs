@@ -32,6 +32,8 @@
 
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      
+      <!-- Service EXE -->
       <Component Id="LiberatioServiceComponent" Guid="1082D4DE-8A2D-4744-9A09-FC73AB49EFF5">
         
         <!-- Executable File -->
@@ -46,8 +48,15 @@
         <ServiceControl Id="LiberatioServiceControl"
                         Start="install" Stop="both" Remove="both" Name="LiberatioServiceExe" Wait="no" />
       </Component>
-      <Component Id="LiberatioConfigurationComponent" Guid="">
+      
+      <!-- Service CONFIG -->
+      <Component Id="LiberatioConfigurationComponent" Guid="6BA12CF1-7398-4C5E-9EAB-4B1B3B043513">
         <File Id="LiberatioConfiguration" Source="$(var.LiberatioService.TargetDir)\LiberatioService.exe.config" KeyPath="yes" />
+      </Component>
+      
+      <!-- Tray EXE -->
+      <Component Id="LiberatioTray" Guid="68491312-2379-418C-B3D8-946959CAE55E">
+        <File Id="LiberatioTrayExeFile" Source="$(var.LiberatioTray.TargetPath)" KeyPath="yes" />
       </Component>
 		</ComponentGroup>
 	</Fragment>
