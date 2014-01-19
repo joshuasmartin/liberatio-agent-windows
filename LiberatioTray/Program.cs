@@ -35,11 +35,20 @@ namespace LiberatioTray
 
             // build the menu
             ContextMenu menu = new ContextMenu();
+            notify.ContextMenu = menu;
+
+            // show console menu item
+            MenuItem itemShowConsole = new MenuItem("Show Console");
+            itemShowConsole.Click += new EventHandler(itemShowConsole_Click);
+            menu.MenuItems.Add(itemShowConsole);
+
+            // separator
+            menu.MenuItems.Add(new MenuItem("-"));
+
+            // close menu item
             MenuItem itemClose = new MenuItem("Close");
             itemClose.Click += new EventHandler(itemClose_Click);
             menu.MenuItems.Add(itemClose);
-
-            notify.ContextMenu = menu;
 
             // finally make the icon visible
             notify.Visible = true;
@@ -52,6 +61,11 @@ namespace LiberatioTray
         private static void itemClose_Click(object Sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private static void itemShowConsole_Click(object Sender, EventArgs e)
+        {
+            new FormConsole().Show();
         }
     }
 }
