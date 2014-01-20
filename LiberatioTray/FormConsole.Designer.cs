@@ -39,6 +39,7 @@
             this.txtLocation = new System.Windows.Forms.TextBox();
             this.cmbRole = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -82,7 +83,8 @@
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
+            this.toolStripStatusLabel1,
+            this.progressBar});
             this.statusStrip1.Location = new System.Drawing.Point(0, 239);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(434, 22);
@@ -122,6 +124,7 @@
             // 
             // cmbRole
             // 
+            this.cmbRole.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbRole.FormattingEnabled = true;
             this.cmbRole.Items.AddRange(new object[] {
             "Workstation",
@@ -139,6 +142,14 @@
             this.label5.Size = new System.Drawing.Size(29, 13);
             this.label5.TabIndex = 12;
             this.label5.Text = "Role";
+            // 
+            // progressBar
+            // 
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(100, 16);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar.Value = 20;
+            this.progressBar.Visible = false;
             // 
             // FormConsole
             // 
@@ -183,6 +194,7 @@
         private System.Windows.Forms.TextBox txtLocation;
         private System.Windows.Forms.ComboBox cmbRole;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ToolStripProgressBar progressBar;
 
     }
 }
