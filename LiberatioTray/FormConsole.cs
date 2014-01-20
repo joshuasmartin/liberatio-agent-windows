@@ -91,52 +91,5 @@ namespace LiberatioTray
 
             }
         }
-
-        /// <summary>
-        /// Updates the configuration file for the LiberatioService
-        /// </summary>
-        /// <param name="pathToValue"></param>
-        /// <param name="newValue"></param>
-        private void UpdateConfiguration(String pathToValue, String newValue)
-        {
-            using (TransactionScope transactionScope = new TransactionScope())
-            {
-                XmlDocument configFile = new XmlDocument();
-
-                configFile.Load("LiberatioService.exe.config");
-
-                XPathNavigator fileNavigator = configFile.CreateNavigator();
-
-                // User recursive function to get to the correct node and set the value
-                WriteValueToConfigFile(fileNavigator, pathToValue, newValue);
-
-                configFile.Save("LiberatioService.exe.config");
-
-                // Commit transaction
-                transactionScope.Complete();
-            }
-        }
-
-        private void WriteValueToConfigFile(XPathNavigator fileNavigator, string remainingPath, string newValue)
-        {
-            string[] splittedXPath = remainingPath.Split(new[] { '/' }, 2);
-            if (splittedXPath.Length == 0 || String.IsNullOrEmpty(remainingPath))
-            {
-                throw new Exception("Path incorrect.");
-            }
-
-            string xPathPart = splittedXPath[0];
-            XPathNavigator nodeNavigator = fileNavigator.SelectSingleNode(xPathPart);
-
-            if (splittedXPath.Length > 1)
-            {
-                // Recursion
-                WriteValueToConfigFile(nodeNavigator, splittedXPath[1], newValue);
-            }
-            else
-            {
-                nodeNavigator.SetValue(newValue ?? String.Empty);
-            }
-        }
     }
 }
