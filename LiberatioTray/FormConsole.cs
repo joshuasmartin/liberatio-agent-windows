@@ -70,22 +70,20 @@ namespace LiberatioTray
             btnSaveAndRestart.Enabled = false;
             progressBar.Visible = true;
 
-            // update the service configuration file
-            XmlDocument doc = new XmlDocument();
-            doc.Load("LiberatioService.exe.config");
-            XmlNode root = doc.DocumentElement;
+            // wcf client for the service
+            ChannelFactory<IConsoleService> pipeFactory =
+                new ChannelFactory<IConsoleService>(
+                                                    new NetNamedPipeBinding(),
+                                                    new EndpointAddress("net.pipe://localhost/ConsoleService"));
 
-            XmlNode nodeUuid = root.SelectSingleNode("appSettings/add[@key='uuid']");
-            nodeUuid.Attributes["value"].Value = txtUuid.Text;
+            pipeProxy = pipeFactory.CreateChannel();
 
-            XmlNode nodeLocation = root.SelectSingleNode("appSettings/add[@key='location']");
-            nodeLocation.Attributes["value"].Value = txtLocation.Text;
+            // update the service configuration
+            pipeProxy.UpdateConfiguration("uuid", txtUuid.Text);
+            pipeProxy.UpdateConfiguration("location", txtLocation.Text);
+            pipeProxy.UpdateConfiguration("role", cmbRole.Text);
 
-            XmlNode nodeRole = root.SelectSingleNode("appSettings/add[@key='role']");
-            nodeRole.Attributes["value"].Value = cmbRole.Text;
-
-            doc.Save("LiberatioService.exe.config");
-
+            // restart the service to refresh the configuration
             RestartService();
 
             progressBar.Visible = false;
