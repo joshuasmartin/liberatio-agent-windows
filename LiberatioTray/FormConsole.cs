@@ -1,11 +1,11 @@
-﻿using RestSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.ServiceModel;
 using System.ServiceProcess;
 using System.Text;
 using System.Transactions;
@@ -15,8 +15,22 @@ using System.Xml.XPath;
 
 namespace LiberatioTray
 {
+    [ServiceContract]
+    public interface IConsoleService
+    {
+        [OperationContract]
+        bool UpdateConfiguration(string key, string value);
+
+        [OperationContract]
+        string GetValueFromConfiguration(string key);
+
+        [OperationContract]
+        bool IsRegistered(string uuid);
+    }
+
     public partial class FormConsole : Form
     {
+        IConsoleService pipeProxy;
 
         public FormConsole()
         {
@@ -25,22 +39,21 @@ namespace LiberatioTray
 
         private void FormConsole_Load(object sender, EventArgs e)
         {
-            // load the service configuration file
-            XmlDocument doc = new XmlDocument();
-            doc.Load("LiberatioService.exe.config");
-            XmlNode root = doc.DocumentElement;
+            // wcf client for the service
+            ChannelFactory<IConsoleService> pipeFactory =
+                new ChannelFactory<IConsoleService>(
+                                                    new NetNamedPipeBinding(),
+                                                    new EndpointAddress("net.pipe://localhost/ConsoleService"));
 
-            XmlNode nodeUuid = root.SelectSingleNode("appSettings/add[@key='uuid']");
-            txtUuid.Text = nodeUuid.Attributes["value"].Value;
+            pipeProxy = pipeFactory.CreateChannel();
 
-            XmlNode nodeLocation = root.SelectSingleNode("appSettings/add[@key='location']");
-            txtLocation.Text = nodeLocation.Attributes["value"].Value;
-
-            XmlNode nodeRole = root.SelectSingleNode("appSettings/add[@key='role']");
-            cmbRole.Text = nodeRole.Attributes["value"].Value;
+            // load values from the wcf service
+            txtUuid.Text = pipeProxy.GetValueFromConfiguration("uuid");
+            txtLocation.Text = pipeProxy.GetValueFromConfiguration("location");
+            cmbRole.Text = pipeProxy.GetValueFromConfiguration("role");
 
             // determine  if the uuid is registered
-            if (IsRegistered(txtUuid.Text))
+            if (pipeProxy.IsRegistered(txtUuid.Text))
             {
                 lblRegistered.Text = "Registered";
                 lblRegistered.ForeColor = Color.Green;
@@ -103,24 +116,6 @@ namespace LiberatioTray
             {
 
             }
-        }
-
-        /// <summary>
-        /// Connects to the Liberatio Website to determine if
-        /// the given uuid is registered
-        /// </summary>
-        /// <param name="uuid"></param>
-        /// <returns></returns>
-        private bool IsRegistered(String uuid)
-        {
-            var client = new RestClient("http://liberatio.herokuapp.com");
-            var request = new RestRequest("nodes/{id}", Method.GET);
-
-            // execute the request
-            RestResponse response = (RestResponse)client.Execute(request);
-            var content = response.Content; // raw content as string
-
-            return true;
         }
     }
 }
