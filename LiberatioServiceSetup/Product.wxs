@@ -58,6 +58,13 @@
       <Component Id="LiberatioTray" Guid="68491312-2379-418C-B3D8-946959CAE55E">
         <File Id="LiberatioTrayExeFile" Source="$(var.LiberatioTray.TargetPath)" KeyPath="yes" />
       </Component>
+
+      <!-- registry run key -->
+      <Component Id="LiberatioTrayRegistryRun" Guid="4969E1BF-F9CE-4D86-AEAF-BE1590266D6F">
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                        KeyPath="yes" Name="Liberatio Tray"
+                        Value="[INSTALLFOLDER]LiberatioTray.exe" Type="string" />
+      </Component>
 		</ComponentGroup>
 	</Fragment>
 </Wix>

@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceModel;
 using System.ServiceProcess;
@@ -77,24 +78,10 @@ namespace LiberatioService
             switch(changeDescription.Reason)
             {
                 case SessionChangeReason.SessionLogon:
-                    // current user
-                    WindowsIdentity identity = WindowsIdentity.GetCurrent();
-                    WindowsPrincipal principal = new WindowsPrincipal(identity);
-
-                    // if user is an administrator, start the gui notification icon
-                    if (principal.IsInRole(WindowsBuiltInRole.Administrator))
-                    {
-                        Process p = new Process();
-
-                        ProcessStartInfo i = new ProcessStartInfo();
-                        i.FileName = "LiberatioTray.exe";
-                        i.UseShellExecute = false;
-                        i.UserName = identity.Name;
-                        p.StartInfo = i;
-
-                        p.Start();
-                    }
-
+                    //StartGuiConsole();
+                    break;
+                case SessionChangeReason.RemoteConnect:
+                    //StartGuiConsole();
                     break;
             }
 
@@ -108,13 +95,35 @@ namespace LiberatioService
             try
             {
                 EventLog.WriteEntry("LiberatioAgent", "Attempt to print JSON");
-                String json = JsonConvert.SerializeObject(i);
-                EventLog.WriteEntry("LiberatioAgent", json, EventLogEntryType.Information);
+                //String json = JsonConvert.SerializeObject(i);
+                //EventLog.WriteEntry("LiberatioAgent", json, EventLogEntryType.Information);
             }
             catch (Exception exception)
             {
                 EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
             }
         }
+
+        //private static void StartGuiConsole()
+        //{
+        //    // print usernames
+        //    string username = Machine.getInstance().getUsername();
+        //    WindowsIdentity identity = WindowsIdentity.GetCurrent();
+        //    WindowsPrincipal principal = new WindowsPrincipal(identity);
+
+        //    EventLog.WriteEntry("LiberatioAgent", "User from Machine is " + username);
+        //    EventLog.WriteEntry("LiberatioAgent", "User from identity is " + identity.Name);
+
+        //    // start process
+        //    Process p = new Process();
+
+        //    ProcessStartInfo i = new ProcessStartInfo();
+        //    i.FileName = "LiberatioTray.exe";
+        //    i.UseShellExecute = false;
+        //    i.UserName = Machine.getInstance().getUsername();
+        //    p.StartInfo = i;
+
+        //    p.Start();
+        //}
     }
 }

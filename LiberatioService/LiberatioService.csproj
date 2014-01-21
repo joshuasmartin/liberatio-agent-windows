@@ -70,6 +70,7 @@
     <Compile Include="ConsoleService.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="LiberatioConfiguration.cs" />
+    <Compile Include="Machine.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
