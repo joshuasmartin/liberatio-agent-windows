@@ -21,7 +21,7 @@ namespace LiberatioService
         public String serial_number { get; set; }
         public List<Application> applications { get; set; }
 
-        public void populate()
+        public Inventory()
         {
             EventLog.WriteEntry("LiberatioAgent", "Performing Inventory", EventLogEntryType.Information);
 
@@ -32,8 +32,6 @@ namespace LiberatioService
             role = ConfigurationManager.AppSettings["role"].Trim(); // from config
             model_number = getModelNumber();
             applications = getApplications();
-
-            EventLog.WriteEntry("LiberatioAgent", "YAYY");
         }
 
         /// <summary>

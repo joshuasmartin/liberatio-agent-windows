@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -37,6 +38,18 @@ namespace LiberatioTray
 
             XmlNode nodeRole = root.SelectSingleNode("appSettings/add[@key='role']");
             cmbRole.Text = nodeRole.Attributes["value"].Value;
+
+            // determine  if the uuid is registered
+            if (IsRegistered(txtUuid.Text))
+            {
+                lblRegistered.Text = "Registered";
+                lblRegistered.ForeColor = Color.Green;
+            }
+            else
+            {
+                lblRegistered.Text = "Unregistered";
+                lblRegistered.ForeColor = Color.Red;
+            }
         }
 
         private void btnSaveAndRestart_Click(object sender, EventArgs e)
@@ -90,6 +103,24 @@ namespace LiberatioTray
             {
 
             }
+        }
+
+        /// <summary>
+        /// Connects to the Liberatio Website to determine if
+        /// the given uuid is registered
+        /// </summary>
+        /// <param name="uuid"></param>
+        /// <returns></returns>
+        private bool IsRegistered(String uuid)
+        {
+            var client = new RestClient("http://liberatio.herokuapp.com");
+            var request = new RestRequest("nodes/{id}", Method.GET);
+
+            // execute the request
+            RestResponse response = (RestResponse)client.Execute(request);
+            var content = response.Content; // raw content as string
+
+            return true;
         }
     }
 }

@@ -31,15 +31,15 @@
             this.txtUuid = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnSaveAndRestart = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lblRegistered = new System.Windows.Forms.Label();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.label3 = new System.Windows.Forms.Label();
+            this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
+            this.lblRegisteredStatus = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.txtLocation = new System.Windows.Forms.TextBox();
             this.cmbRole = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -69,16 +69,16 @@
             this.btnSaveAndRestart.UseVisualStyleBackColor = true;
             this.btnSaveAndRestart.Click += new System.EventHandler(this.btnSaveAndRestart_Click);
             // 
-            // label2
+            // lblRegistered
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.ForeColor = System.Drawing.Color.Red;
-            this.label2.Location = new System.Drawing.Point(343, 9);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(79, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Unregistered";
+            this.lblRegistered.AutoSize = true;
+            this.lblRegistered.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRegistered.ForeColor = System.Drawing.Color.Red;
+            this.lblRegistered.Location = new System.Drawing.Point(343, 9);
+            this.lblRegistered.Name = "lblRegistered";
+            this.lblRegistered.Size = new System.Drawing.Size(79, 13);
+            this.lblRegistered.TabIndex = 4;
+            this.lblRegistered.Text = "Unregistered";
             // 
             // statusStrip1
             // 
@@ -97,14 +97,22 @@
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(115, 17);
             this.toolStripStatusLabel1.Text = "Liberatio Agent 1.0.0";
             // 
-            // label3
+            // progressBar
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(241, 9);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(96, 13);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Registration Status";
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(100, 16);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar.Value = 20;
+            this.progressBar.Visible = false;
+            // 
+            // lblRegisteredStatus
+            // 
+            this.lblRegisteredStatus.AutoSize = true;
+            this.lblRegisteredStatus.Location = new System.Drawing.Point(241, 9);
+            this.lblRegisteredStatus.Name = "lblRegisteredStatus";
+            this.lblRegisteredStatus.Size = new System.Drawing.Size(96, 13);
+            this.lblRegisteredStatus.TabIndex = 8;
+            this.lblRegisteredStatus.Text = "Registration Status";
             // 
             // label4
             // 
@@ -143,14 +151,6 @@
             this.label5.TabIndex = 12;
             this.label5.Text = "Role";
             // 
-            // progressBar
-            // 
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(100, 16);
-            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar.Value = 20;
-            this.progressBar.Visible = false;
-            // 
             // FormConsole
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -160,9 +160,9 @@
             this.Controls.Add(this.cmbRole);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtLocation);
-            this.Controls.Add(this.label3);
+            this.Controls.Add(this.lblRegisteredStatus);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.lblRegistered);
             this.Controls.Add(this.btnSaveAndRestart);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtUuid);
@@ -186,10 +186,10 @@
         private System.Windows.Forms.TextBox txtUuid;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnSaveAndRestart;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lblRegistered;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lblRegisteredStatus;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtLocation;
         private System.Windows.Forms.ComboBox cmbRole;

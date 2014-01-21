@@ -7,6 +7,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
+using System.ServiceModel;
 using System.ServiceProcess;
 using System.Text;
 using System.Timers;
@@ -16,12 +17,18 @@ namespace LiberatioService
     public partial class Service1 : ServiceBase
     {
         Timer t = new Timer();
+        ServiceHost host;
 
         public Service1()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Establishes the event log source, starts the agent,
+        /// and opens the ConsoleService named pipe
+        /// </summary>
+        /// <param name="args"></param>
         protected override void OnStart(string[] args)
         {
             // configure logging
@@ -31,34 +38,40 @@ namespace LiberatioService
                 return;
             }
 
-            // // generate a new uuid for the config if one does not exist
-            if (ConfigurationManager.AppSettings["uuid"].Trim().Length == 0)
-            {
-                Guid g = Guid.NewGuid();
-                EventLog.WriteEntry("Setting UUID to " + g.ToString());
-
-                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-                config.AppSettings.Settings.Remove("uuid");
-                config.AppSettings.Settings.Add("uuid", g.ToString());
-
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
-            }
+            // verify that there is a valid uuid
+            LiberatioConfiguration.CheckOrUpdateUuid();
 
             // start the timer
             t.Interval = 3000;
-
             t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-
             t.Enabled = true;
+
+            // start the console service
+            using (host = new ServiceHost(  typeof(ConsoleService),
+                                            new Uri[]{ new Uri("net.pipe://localhost") } ))
+            {
+                host.AddServiceEndpoint(typeof(IConsoleService),
+                                        new NetNamedPipeBinding(),
+                                        "ConsoleService");
+                host.Open(); // start the named pipe WCF host
+            }
         }
 
+        /// <summary>
+        /// Stops the agent, and closes the ConsoleService named pipe
+        /// </summary>
         protected override void OnStop()
         {
+            // stop the timer, and close the console service host
             t.Enabled = false;
+            host.Close();
         }
 
+        /// <summary>
+        /// Starts the console in the system tray when a user logs on, only if
+        /// the user is an Administrator
+        /// </summary>
+        /// <param name="changeDescription"></param>
         protected override void OnSessionChange(SessionChangeDescription changeDescription)
         {
             switch(changeDescription.Reason)
@@ -88,13 +101,9 @@ namespace LiberatioService
             base.OnSessionChange(changeDescription);
         }
 
-        // Specify what you want to happen when the Elapsed event is 
-        // raised.
         private static void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            Console.WriteLine("The Elapsed event was raised at {0}", e.SignalTime);
             Inventory i = new Inventory();
-            i.populate();
 
             try
             {
@@ -104,7 +113,7 @@ namespace LiberatioService
             }
             catch (Exception exception)
             {
-                EventLog.WriteEntry("LiberatioAgent", exception.Message, EventLogEntryType.Error);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
             }
         }
     }
