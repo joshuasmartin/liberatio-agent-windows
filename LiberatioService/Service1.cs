@@ -19,6 +19,7 @@ namespace LiberatioService
     {
         Timer t = new Timer();
         ServiceHost host;
+        LiberatioCommandsClient commandsClient = new LiberatioCommandsClient();
 
         public Service1()
         {
@@ -55,6 +56,9 @@ namespace LiberatioService
                                             new Uri[] { new Uri("net.pipe://localhost") });
             host.AddServiceEndpoint(typeof(IConsoleService), new NetNamedPipeBinding(), "ConsoleService");
             host.Open(); // start the named pipe WCF host
+
+            // start the Liberatio Commands web socket client
+            commandsClient.start();
         }
 
         /// <summary>
@@ -65,6 +69,9 @@ namespace LiberatioService
             // stop the timer, and close the console service host
             t.Enabled = false;
             host.Close();
+
+            // stop the Liberatio Commands web socket client
+            commandsClient.stop();
         }
 
         private static void OnTimedEvent(object source, ElapsedEventArgs e)
