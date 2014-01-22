@@ -64,11 +64,15 @@
     <Reference Include="System.Data" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
+    <Reference Include="WebSocket4Net">
+      <HintPath>..\packages\WebSocket4Net.0.8\lib\net35\WebSocket4Net.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
     <Compile Include="ConsoleService.cs" />
     <Compile Include="Inventory.cs" />
+    <Compile Include="LiberatioCommandsClient.cs" />
     <Compile Include="LiberatioConfiguration.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
