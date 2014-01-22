@@ -31,6 +31,7 @@ namespace LiberatioService
             role = ConfigurationManager.AppSettings["role"].Trim(); // from config
             model_number = getModelNumber();
             applications = getApplications();
+            serial_number = getSerialNumber();
         }
 
         public void Send()
@@ -81,6 +82,18 @@ namespace LiberatioService
             foreach (ManagementObject os in searcher.Get())
             {
                 result = String.Format("{0} {1}", os["Manufacturer"], os["Model"]);
+                break;
+            }
+            return result;
+        }
+
+        private String getSerialNumber()
+        {
+            string result = string.Empty;
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BaseBoard");
+            foreach (ManagementObject os in searcher.Get())
+            {
+                result = os["SerialNumber"].ToString();
                 break;
             }
             return result;
