@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
+using System.Management;
 using System.Text;
 
 namespace LiberatioService
@@ -28,6 +29,44 @@ namespace LiberatioService
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
             }
+        }
+
+        /// <summary>
+        /// Uses WMI to determine the operating system type. It will be a
+        /// Server, Workstation, or Domain Controller. The result is
+        /// saved to the configuration file in the role attribute.
+        /// </summary>
+        public static void DiscoverRole()
+        {
+            // use wmi to determine the ProductType
+            string result = string.Empty;
+            ManagementObjectSearcher searcher =
+                new ManagementObjectSearcher("SELECT ProductType FROM Win32_OperatingSystem");
+            foreach (ManagementObject os in searcher.Get())
+            {
+                switch (os["ProductType"].ToString())
+                {
+                    case "1":
+                        result = "Workstation";
+                        break;
+                    case "2":
+                        result = "Domain Controller";
+                        break;
+                    case "3":
+                        result = "Server";
+                        break;
+                }
+                break;
+            }
+
+            // set the result in the configuration
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            config.AppSettings.Settings.Remove("role");
+            config.AppSettings.Settings.Add("role", result);
+
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
         }
 
         /// <summary>

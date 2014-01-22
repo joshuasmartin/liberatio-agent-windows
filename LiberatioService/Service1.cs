@@ -42,20 +42,19 @@ namespace LiberatioService
             // verify that there is a valid uuid
             LiberatioConfiguration.CheckOrUpdateUuid();
 
+            // attempt to discover role
+            LiberatioConfiguration.DiscoverRole();
+
             // start the timer
-            t.Interval = 3000;
+            t.Interval = 10000;
             t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             t.Enabled = true;
 
             // start the console service
-            using (host = new ServiceHost(  typeof(ConsoleService),
-                                            new Uri[]{ new Uri("net.pipe://localhost") } ))
-            {
-                host.AddServiceEndpoint(typeof(IConsoleService),
-                                        new NetNamedPipeBinding(),
-                                        "ConsoleService");
-                host.Open(); // start the named pipe WCF host
-            }
+            host = new ServiceHost(typeof(ConsoleService),
+                                            new Uri[] { new Uri("net.pipe://localhost") });
+            host.AddServiceEndpoint(typeof(IConsoleService), new NetNamedPipeBinding(), "ConsoleService");
+            host.Open(); // start the named pipe WCF host
         }
 
         /// <summary>
@@ -66,26 +65,6 @@ namespace LiberatioService
             // stop the timer, and close the console service host
             t.Enabled = false;
             host.Close();
-        }
-
-        /// <summary>
-        /// Starts the console in the system tray when a user logs on, only if
-        /// the user is an Administrator
-        /// </summary>
-        /// <param name="changeDescription"></param>
-        protected override void OnSessionChange(SessionChangeDescription changeDescription)
-        {
-            switch(changeDescription.Reason)
-            {
-                case SessionChangeReason.SessionLogon:
-                    //StartGuiConsole();
-                    break;
-                case SessionChangeReason.RemoteConnect:
-                    //StartGuiConsole();
-                    break;
-            }
-
-            base.OnSessionChange(changeDescription);
         }
 
         private static void OnTimedEvent(object source, ElapsedEventArgs e)
@@ -103,27 +82,5 @@ namespace LiberatioService
                 EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
             }
         }
-
-        //private static void StartGuiConsole()
-        //{
-        //    // print usernames
-        //    string username = Machine.getInstance().getUsername();
-        //    WindowsIdentity identity = WindowsIdentity.GetCurrent();
-        //    WindowsPrincipal principal = new WindowsPrincipal(identity);
-
-        //    EventLog.WriteEntry("LiberatioAgent", "User from Machine is " + username);
-        //    EventLog.WriteEntry("LiberatioAgent", "User from identity is " + identity.Name);
-
-        //    // start process
-        //    Process p = new Process();
-
-        //    ProcessStartInfo i = new ProcessStartInfo();
-        //    i.FileName = "LiberatioTray.exe";
-        //    i.UseShellExecute = false;
-        //    i.UserName = Machine.getInstance().getUsername();
-        //    p.StartInfo = i;
-
-        //    p.Start();
-        //}
     }
 }

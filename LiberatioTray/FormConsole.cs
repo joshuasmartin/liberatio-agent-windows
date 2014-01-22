@@ -30,8 +30,6 @@ namespace LiberatioTray
 
     public partial class FormConsole : Form
     {
-        IConsoleService pipeProxy;
-
         public FormConsole()
         {
             InitializeComponent();
@@ -39,30 +37,15 @@ namespace LiberatioTray
 
         private void FormConsole_Load(object sender, EventArgs e)
         {
-            // wcf client for the service
-            ChannelFactory<IConsoleService> pipeFactory =
-                new ChannelFactory<IConsoleService>(
-                                                    new NetNamedPipeBinding(),
-                                                    new EndpointAddress("net.pipe://localhost/ConsoleService"));
-
-            pipeProxy = pipeFactory.CreateChannel();
+            // wcf client to the service
+            IConsoleService pipeProxy = OpenChannelToService();
 
             // load values from the wcf service
             txtUuid.Text = pipeProxy.GetValueFromConfiguration("uuid");
             txtLocation.Text = pipeProxy.GetValueFromConfiguration("location");
             cmbRole.Text = pipeProxy.GetValueFromConfiguration("role");
 
-            // determine  if the uuid is registered
-            if (pipeProxy.IsRegistered(txtUuid.Text))
-            {
-                lblRegistered.Text = "Registered";
-                lblRegistered.ForeColor = Color.Green;
-            }
-            else
-            {
-                lblRegistered.Text = "Unregistered";
-                lblRegistered.ForeColor = Color.Red;
-            }
+            ReportIsRegistered();
         }
 
         private void btnSaveAndRestart_Click(object sender, EventArgs e)
@@ -70,13 +53,8 @@ namespace LiberatioTray
             btnSaveAndRestart.Enabled = false;
             progressBar.Visible = true;
 
-            // wcf client for the service
-            ChannelFactory<IConsoleService> pipeFactory =
-                new ChannelFactory<IConsoleService>(
-                                                    new NetNamedPipeBinding(),
-                                                    new EndpointAddress("net.pipe://localhost/ConsoleService"));
-
-            pipeProxy = pipeFactory.CreateChannel();
+            // wcf client to the service
+            IConsoleService pipeProxy = OpenChannelToService();
 
             // update the service configuration
             pipeProxy.UpdateConfiguration("uuid", txtUuid.Text);
@@ -114,6 +92,49 @@ namespace LiberatioTray
             {
 
             }
+        }
+
+        private void ReportIsRegistered()
+        {
+            // wcf client to the service
+            IConsoleService pipeProxy = OpenChannelToService();
+
+            // determine if the uuid is registered
+            if (pipeProxy.IsRegistered(txtUuid.Text))
+            {
+                lblConnectionStatusValue.Text = "Registered";
+                lblConnectionStatusValue.ForeColor = Color.Green;
+            }
+            else
+            {
+                lblConnectionStatusValue.Text = "Unregistered";
+                lblConnectionStatusValue.ForeColor = Color.Red;
+            }
+        }
+
+        /// <summary>
+        /// Opens a named-pipe WCF client connection to
+        /// the Liberatio Agent service.
+        /// </summary>
+        /// <returns></returns>
+        private IConsoleService OpenChannelToService()
+        {
+            ChannelFactory<IConsoleService> pipeFactory =
+                new ChannelFactory<IConsoleService>(
+                                                    new NetNamedPipeBinding(),
+                                                    new EndpointAddress("net.pipe://localhost/ConsoleService"));
+            return pipeFactory.CreateChannel();
+        }
+
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            new FormRegister().Show(this);
+        }
+
+        private void btnSaveAndRestart_Enter(object sender, EventArgs e)
+        {
+            ToolTip t = new ToolTip();
+            t.SetToolTip(btnSaveAndRestart, "Saves your changes, and restarts the service.");
         }
     }
 }

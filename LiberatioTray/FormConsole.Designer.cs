@@ -29,56 +29,48 @@
         private void InitializeComponent()
         {
             this.txtUuid = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lblUuid = new System.Windows.Forms.Label();
             this.btnSaveAndRestart = new System.Windows.Forms.Button();
-            this.lblRegistered = new System.Windows.Forms.Label();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
-            this.lblRegisteredStatus = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
+            this.lblLocation = new System.Windows.Forms.Label();
             this.txtLocation = new System.Windows.Forms.TextBox();
             this.cmbRole = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
+            this.lblRole = new System.Windows.Forms.Label();
+            this.lblConnectionStatus = new System.Windows.Forms.Label();
+            this.lblConnectionStatusValue = new System.Windows.Forms.Label();
+            this.btnConnect = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtUuid
             // 
-            this.txtUuid.Location = new System.Drawing.Point(152, 55);
+            this.txtUuid.Location = new System.Drawing.Point(152, 93);
             this.txtUuid.Name = "txtUuid";
+            this.txtUuid.ReadOnly = true;
             this.txtUuid.Size = new System.Drawing.Size(215, 20);
             this.txtUuid.TabIndex = 0;
             // 
-            // label1
+            // lblUuid
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(26, 58);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(120, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Unique Identifier (UUID)";
+            this.lblUuid.AutoSize = true;
+            this.lblUuid.Location = new System.Drawing.Point(26, 96);
+            this.lblUuid.Name = "lblUuid";
+            this.lblUuid.Size = new System.Drawing.Size(120, 13);
+            this.lblUuid.TabIndex = 1;
+            this.lblUuid.Text = "Unique Identifier (UUID)";
             // 
             // btnSaveAndRestart
             // 
-            this.btnSaveAndRestart.Location = new System.Drawing.Point(279, 202);
+            this.btnSaveAndRestart.Location = new System.Drawing.Point(152, 181);
             this.btnSaveAndRestart.Name = "btnSaveAndRestart";
-            this.btnSaveAndRestart.Size = new System.Drawing.Size(143, 23);
+            this.btnSaveAndRestart.Size = new System.Drawing.Size(103, 23);
             this.btnSaveAndRestart.TabIndex = 2;
-            this.btnSaveAndRestart.Text = "Save and Restart Service";
+            this.btnSaveAndRestart.Text = "Save Changes";
             this.btnSaveAndRestart.UseVisualStyleBackColor = true;
             this.btnSaveAndRestart.Click += new System.EventHandler(this.btnSaveAndRestart_Click);
-            // 
-            // lblRegistered
-            // 
-            this.lblRegistered.AutoSize = true;
-            this.lblRegistered.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRegistered.ForeColor = System.Drawing.Color.Red;
-            this.lblRegistered.Location = new System.Drawing.Point(343, 9);
-            this.lblRegistered.Name = "lblRegistered";
-            this.lblRegistered.Size = new System.Drawing.Size(79, 13);
-            this.lblRegistered.TabIndex = 4;
-            this.lblRegistered.Text = "Unregistered";
+            this.btnSaveAndRestart.Enter += new System.EventHandler(this.btnSaveAndRestart_Enter);
             // 
             // statusStrip1
             // 
@@ -105,27 +97,18 @@
             this.progressBar.Value = 20;
             this.progressBar.Visible = false;
             // 
-            // lblRegisteredStatus
+            // lblLocation
             // 
-            this.lblRegisteredStatus.AutoSize = true;
-            this.lblRegisteredStatus.Location = new System.Drawing.Point(241, 9);
-            this.lblRegisteredStatus.Name = "lblRegisteredStatus";
-            this.lblRegisteredStatus.Size = new System.Drawing.Size(96, 13);
-            this.lblRegisteredStatus.TabIndex = 8;
-            this.lblRegisteredStatus.Text = "Registration Status";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(98, 84);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(48, 13);
-            this.label4.TabIndex = 10;
-            this.label4.Text = "Location";
+            this.lblLocation.AutoSize = true;
+            this.lblLocation.Location = new System.Drawing.Point(98, 122);
+            this.lblLocation.Name = "lblLocation";
+            this.lblLocation.Size = new System.Drawing.Size(48, 13);
+            this.lblLocation.TabIndex = 10;
+            this.lblLocation.Text = "Location";
             // 
             // txtLocation
             // 
-            this.txtLocation.Location = new System.Drawing.Point(152, 81);
+            this.txtLocation.Location = new System.Drawing.Point(152, 119);
             this.txtLocation.Name = "txtLocation";
             this.txtLocation.Size = new System.Drawing.Size(165, 20);
             this.txtLocation.TabIndex = 9;
@@ -137,34 +120,65 @@
             this.cmbRole.Items.AddRange(new object[] {
             "Workstation",
             "Server"});
-            this.cmbRole.Location = new System.Drawing.Point(152, 107);
+            this.cmbRole.Location = new System.Drawing.Point(152, 145);
             this.cmbRole.Name = "cmbRole";
             this.cmbRole.Size = new System.Drawing.Size(165, 21);
             this.cmbRole.TabIndex = 11;
             // 
-            // label5
+            // lblRole
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(117, 110);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(29, 13);
-            this.label5.TabIndex = 12;
-            this.label5.Text = "Role";
+            this.lblRole.AutoSize = true;
+            this.lblRole.Location = new System.Drawing.Point(117, 148);
+            this.lblRole.Name = "lblRole";
+            this.lblRole.Size = new System.Drawing.Size(29, 13);
+            this.lblRole.TabIndex = 12;
+            this.lblRole.Text = "Role";
+            // 
+            // lblConnectionStatus
+            // 
+            this.lblConnectionStatus.AutoSize = true;
+            this.lblConnectionStatus.Location = new System.Drawing.Point(106, 21);
+            this.lblConnectionStatus.Name = "lblConnectionStatus";
+            this.lblConnectionStatus.Size = new System.Drawing.Size(37, 13);
+            this.lblConnectionStatus.TabIndex = 14;
+            this.lblConnectionStatus.Text = "Status";
+            // 
+            // lblConnectionStatusValue
+            // 
+            this.lblConnectionStatusValue.AutoSize = true;
+            this.lblConnectionStatusValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblConnectionStatusValue.ForeColor = System.Drawing.Color.Red;
+            this.lblConnectionStatusValue.Location = new System.Drawing.Point(149, 21);
+            this.lblConnectionStatusValue.Name = "lblConnectionStatusValue";
+            this.lblConnectionStatusValue.Size = new System.Drawing.Size(79, 13);
+            this.lblConnectionStatusValue.TabIndex = 13;
+            this.lblConnectionStatusValue.Text = "Unregistered";
+            // 
+            // btnConnect
+            // 
+            this.btnConnect.Location = new System.Drawing.Point(152, 46);
+            this.btnConnect.Name = "btnConnect";
+            this.btnConnect.Size = new System.Drawing.Size(152, 23);
+            this.btnConnect.TabIndex = 15;
+            this.btnConnect.Text = "Register with Liberatio.com";
+            this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // FormConsole
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(434, 261);
-            this.Controls.Add(this.label5);
+            this.Controls.Add(this.btnConnect);
+            this.Controls.Add(this.lblConnectionStatus);
+            this.Controls.Add(this.lblConnectionStatusValue);
+            this.Controls.Add(this.lblRole);
             this.Controls.Add(this.cmbRole);
-            this.Controls.Add(this.label4);
+            this.Controls.Add(this.lblLocation);
             this.Controls.Add(this.txtLocation);
-            this.Controls.Add(this.lblRegisteredStatus);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.lblRegistered);
             this.Controls.Add(this.btnSaveAndRestart);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblUuid);
             this.Controls.Add(this.txtUuid);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -184,17 +198,18 @@
         #endregion
 
         private System.Windows.Forms.TextBox txtUuid;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblUuid;
         private System.Windows.Forms.Button btnSaveAndRestart;
-        private System.Windows.Forms.Label lblRegistered;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-        private System.Windows.Forms.Label lblRegisteredStatus;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label lblLocation;
         private System.Windows.Forms.TextBox txtLocation;
         private System.Windows.Forms.ComboBox cmbRole;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lblRole;
         private System.Windows.Forms.ToolStripProgressBar progressBar;
+        private System.Windows.Forms.Label lblConnectionStatus;
+        private System.Windows.Forms.Label lblConnectionStatusValue;
+        private System.Windows.Forms.Button btnConnect;
 
     }
 }
