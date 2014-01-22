@@ -38,6 +38,11 @@
         
         <!-- Executable File -->
         <File Id="LiberatioServiceExeFile" Source="$(var.LiberatioService.TargetPath)" KeyPath="yes" />
+
+        <!-- Libraries Needed -->
+        <File Source="$(var.LiberatioService.TargetDir)\Newtonsoft.Json.dll" />
+        <File Source="$(var.LiberatioService.TargetDir)\RestSharp.dll" />
+        <File Source="$(var.LiberatioService.TargetDir)\WebSocket4Net.dll" />
         
         <!-- Installs the Service -->
         <ServiceInstall Id="LiberatioServiceInstall" Type="ownProcess" Name="LiberatioServiceExe"

@@ -19,7 +19,7 @@ namespace LiberatioService
     {
         Timer t = new Timer();
         ServiceHost host;
-        LiberatioCommandsClient commandsClient = new LiberatioCommandsClient();
+        //LiberatioCommandsClient commandsClient = new LiberatioCommandsClient();
 
         public Service1()
         {
@@ -47,8 +47,15 @@ namespace LiberatioService
             LiberatioConfiguration.DiscoverRole();
 
             // start the timer
-            t.Interval = 10000;
-            t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            t.Interval = 10 * 1000;
+            try
+            {
+                t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
+            }
             t.Enabled = true;
 
             // start the console service
@@ -58,7 +65,7 @@ namespace LiberatioService
             host.Open(); // start the named pipe WCF host
 
             // start the Liberatio Commands web socket client
-            commandsClient.start();
+            //commandsClient.start();
         }
 
         /// <summary>
@@ -71,22 +78,23 @@ namespace LiberatioService
             host.Close();
 
             // stop the Liberatio Commands web socket client
-            commandsClient.stop();
+            //commandsClient.stop();
         }
 
         private static void OnTimedEvent(object source, ElapsedEventArgs e)
         {
+            EventLog.WriteEntry("LiberatioAgent", "Performing inventory, and sending to Liberatio.com");
             Inventory i = new Inventory();
 
             try
             {
-                EventLog.WriteEntry("LiberatioAgent", "Attempt to print JSON");
-                //String json = JsonConvert.SerializeObject(i);
-                //EventLog.WriteEntry("LiberatioAgent", json, EventLogEntryType.Information);
+                String json = JsonConvert.SerializeObject(i, Formatting.Indented);
+
+                EventLog.WriteEntry("LiberatioAgent", json);
             }
-            catch (Exception exception)
+            catch(Exception exception)
             {
-                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
             }
         }
     }

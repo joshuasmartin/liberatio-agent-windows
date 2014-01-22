@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -19,12 +20,10 @@ namespace LiberatioService
         public String role { get; set; }
         public String model_number { get; set; }
         public String serial_number { get; set; }
-        public List<Application> applications { get; set; }
+        public IList<Application> applications { get; set; }
 
         public Inventory()
         {
-            EventLog.WriteEntry("LiberatioAgent", "Performing Inventory", EventLogEntryType.Information);
-
             uuid = ConfigurationManager.AppSettings["uuid"].Trim(); // from config
             name = System.Environment.MachineName;
             operating_system = getOperatingSystem();
@@ -32,6 +31,25 @@ namespace LiberatioService
             role = ConfigurationManager.AppSettings["role"].Trim(); // from config
             model_number = getModelNumber();
             applications = getApplications();
+        }
+
+        public void Send()
+        {
+            try
+            {
+                var client = new RestClient("http://liberatio.herokuapp.com");
+                var request = new RestRequest("inventories", Method.POST);
+
+                request.AddParameter("application/json", "data", ParameterType.RequestBody);
+
+                // execute the request
+                RestResponse response = (RestResponse)client.Execute(request);
+                var content = response.Content; // raw content as string
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
+            }
         }
 
         /// <summary>
@@ -88,11 +106,18 @@ namespace LiberatioService
                 {
                     foreach (String subkeyName in key.GetSubKeyNames())
                     {
-                        String _name = key.OpenSubKey(subkeyName).GetValue("DisplayName", "").ToString();
-                        String _version = key.OpenSubKey(subkeyName).GetValue("DisplayVersion", "").ToString();
-                        String _publisher = key.OpenSubKey(subkeyName).GetValue("Publisher", "").ToString();
+                        string _name = key.OpenSubKey(subkeyName).GetValue("DisplayName", "").ToString();
+                        string _version = key.OpenSubKey(subkeyName).GetValue("DisplayVersion", "").ToString();
+                        string _publisher = key.OpenSubKey(subkeyName).GetValue("Publisher", "").ToString();
+                        string _sComponent = key.OpenSubKey(subkeyName).GetValue("SystemComponent", "").ToString();
 
-                        list.Add(new Application(_name, _version, _publisher));
+                        if ((_name.Length > 0) && (_version.Length > 0) && (_publisher.Length > 0))
+                        {
+                            if ((_sComponent.Length == 0) || (_sComponent == "0"))
+                            {
+                                list.Add(new Application(_name, _publisher, _version));
+                            }
+                        }
                     }
                 }
 
@@ -101,11 +126,18 @@ namespace LiberatioService
                 {
                     foreach (String subkeyName in key.GetSubKeyNames())
                     {
-                        String _name = key.OpenSubKey(subkeyName).GetValue("DisplayName", "").ToString();
-                        String _version = key.OpenSubKey(subkeyName).GetValue("DisplayVersion", "").ToString();
-                        String _publisher = key.OpenSubKey(subkeyName).GetValue("Publisher", "").ToString();
+                        string _name = key.OpenSubKey(subkeyName).GetValue("DisplayName", "").ToString();
+                        string _version = key.OpenSubKey(subkeyName).GetValue("DisplayVersion", "").ToString();
+                        string _publisher = key.OpenSubKey(subkeyName).GetValue("Publisher", "").ToString();
+                        string _sComponent = key.OpenSubKey(subkeyName).GetValue("SystemComponent", "").ToString();
 
-                        list.Add(new Application(_name, _version, _publisher));
+                        if ((_name.Length > 0) && (_version.Length > 0) && (_publisher.Length > 0))
+                        {
+                            if ((_sComponent.Length == 0) || (_sComponent == "0"))
+                            {
+                                list.Add(new Application(_name, _publisher, _version));
+                            }
+                        }
                     }
                 }
             }
