@@ -19,7 +19,7 @@ namespace LiberatioService
     {
         Timer t = new Timer();
         ServiceHost host;
-        //LiberatioCommandsClient commandsClient = new LiberatioCommandsClient();
+        LiberatioCommandsClient commandsClient = new LiberatioCommandsClient();
 
         public Service1()
         {

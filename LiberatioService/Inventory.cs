@@ -87,6 +87,10 @@ namespace LiberatioService
             return result;
         }
 
+        /// <summary>
+        /// Acquires the motherboard serial number via WMI.
+        /// </summary>
+        /// <returns>The motherboard serial number</returns>
         private String getSerialNumber()
         {
             string result = string.Empty;
