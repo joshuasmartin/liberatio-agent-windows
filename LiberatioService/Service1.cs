@@ -85,17 +85,7 @@ namespace LiberatioService
         {
             EventLog.WriteEntry("LiberatioAgent", "Performing inventory, and sending to Liberatio.com");
             Inventory i = new Inventory();
-
-            try
-            {
-                String json = JsonConvert.SerializeObject(i, Formatting.Indented);
-
-                EventLog.WriteEntry("LiberatioAgent", json);
-            }
-            catch(Exception exception)
-            {
-                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
-            }
+            i.Send();
         }
     }
 }

@@ -35,21 +35,28 @@ namespace LiberatioService
 
         public bool IsRegistered(string uuid)
         {
+            bool found = false;
+
             try
             {
                 var client = new RestClient("http://liberatio.herokuapp.com");
-                var request = new RestRequest("nodes/{id}", Method.GET);
+                var request = new RestRequest("nodes", Method.GET);
+
+                request.AddParameter("uuid", uuid, ParameterType.QueryString);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
-                var content = response.Content; // raw content as string
+                if (response.StatusCode.Equals(System.Net.HttpStatusCode.Found))
+                {
+                    found = true;
+                }
             }
             catch (Exception exception)
             {
                 EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
             }
 
-            return true;
+            return found;
         }
     }
 }

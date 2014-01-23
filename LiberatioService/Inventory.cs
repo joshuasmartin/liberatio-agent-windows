@@ -38,14 +38,30 @@ namespace LiberatioService
         {
             try
             {
+                // client
                 var client = new RestClient("http://liberatio.herokuapp.com");
-                var request = new RestRequest("inventories", Method.POST);
+                var request = new RestRequest("inventories.json", Method.POST);
 
-                request.AddParameter("application/json", "data", ParameterType.RequestBody);
+                // add registration code if it's available
+                string registrationCode = LiberatioConfiguration.GetValue("registrationCode");
+                if (registrationCode.Length != 0)
+                {
+                    request.AddParameter("registration_code", registrationCode, ParameterType.QueryString);
+                }
+
+                // data
+                String json = JsonConvert.SerializeObject(new { inventory = this }, Formatting.Indented);
+                request.AddParameter("application/json", json, ParameterType.RequestBody);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
                 var content = response.Content; // raw content as string
+
+                // clear the registration code
+                if (registrationCode.Length != 0)
+                {
+                    LiberatioConfiguration.UpdateValue("registrationCode", "");
+                }
             }
             catch (Exception exception)
             {
