@@ -104,6 +104,7 @@ namespace LiberatioTray
             {
                 lblConnectionStatusValue.Text = "Registered";
                 lblConnectionStatusValue.ForeColor = Color.Green;
+                btnConnect.Visible = false;
             }
             else
             {

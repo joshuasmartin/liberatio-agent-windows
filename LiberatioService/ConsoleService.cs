@@ -40,13 +40,13 @@ namespace LiberatioService
             try
             {
                 var client = new RestClient("http://liberatio.herokuapp.com");
-                var request = new RestRequest("nodes", Method.GET);
+                var request = new RestRequest("nodes/registered.json", Method.GET);
 
                 request.AddParameter("uuid", uuid, ParameterType.QueryString);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
-                if (response.StatusCode.Equals(System.Net.HttpStatusCode.Found))
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     found = true;
                 }

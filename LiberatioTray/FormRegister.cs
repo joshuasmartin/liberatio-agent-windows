@@ -23,6 +23,8 @@ namespace LiberatioTray
             IConsoleService pipeProxy = OpenChannelToService();
 
             pipeProxy.UpdateConfiguration("registrationCode", txtCode.Text);
+
+            this.Dispose(); // hide and dispose
         }
 
         /// <summary>
