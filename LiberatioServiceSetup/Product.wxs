@@ -47,7 +47,7 @@
         <!-- Installs the Service -->
         <ServiceInstall Id="LiberatioServiceInstall" Type="ownProcess" Name="LiberatioServiceExe"
                         DisplayName="Liberatio Agent"
-                        Start="auto" Account="LocalSystem" ErrorControl="normal" />
+                        Start="auto" Account="NetworkService" ErrorControl="normal" />
         
         <!-- Starts the Service -->
         <ServiceControl Id="LiberatioServiceControl"
@@ -56,7 +56,7 @@
       
       <!-- Service CONFIG -->
       <Component Id="LiberatioConfigurationComponent" Guid="6BA12CF1-7398-4C5E-9EAB-4B1B3B043513">
-        <File Id="LiberatioConfiguration" Source="$(var.LiberatioService.TargetDir)\LiberatioService.exe.config" KeyPath="yes" />
+        <File Id="LiberatioConfiguration" Source="$(var.LiberatioService.TargetDir)\LiberatioService.exe.config" KeyPath="no" />
       </Component>
       
       <!-- Tray EXE -->
