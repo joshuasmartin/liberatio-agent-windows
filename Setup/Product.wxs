@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+	<Product Id="2413543B-9EBC-49C7-813A-F200796AF300" Name="Liberatio Agent" Language="1033" Version="1.0.0.0" Manufacturer="Liberatio" UpgradeCode="021F5537-12A1-4F37-A3BC-9D181B35FB54">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <!-- Require .NET Framework 4.0 Client -->
+    <PropertyRef Id="NETFRAMEWORK40CLIENT"/>
+
+    <!--<Icon Id="icon.ico" SourceFile="MySourceFiles\icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />-->
+
+    <Condition Message="This application requires at least the .NET Framework 4.0 Client Profile. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK40CLIENT]]>
+    </Condition>
+    
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+		<Feature Id="ProductFeature" Title="Liberatio Service" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="Liberatio Agent" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      
+      <!-- Service EXE -->
+      <Component Id="LiberatioServiceComponent" Guid="1082D4DE-8A2D-4744-9A09-FC73AB49EFF5">
+        
+        <!-- Executable File -->
+        <File Id="LiberatioServiceExeFile" Source="$(var.Service.TargetPath)" KeyPath="yes" />
+
+        <!-- Libraries Needed -->
+        <File Source="$(var.Service.TargetDir)\Newtonsoft.Json.dll" />
+        <File Source="$(var.Service.TargetDir)\PusherClient.dll" />
+        <File Source="$(var.Service.TargetDir)\RestSharp.dll" />
+        <File Source="$(var.Service.TargetDir)\WebSocket4Net.dll" />
+        
+        <!-- Installs the Service -->
+        <ServiceInstall Id="LiberatioServiceInstall" Type="ownProcess" Name="LiberatioServiceExe"
+                        DisplayName="Liberatio Agent"
+                        Start="auto" Account="LocalSystem" ErrorControl="normal" />
+        
+        <!-- Starts the Service -->
+        <ServiceControl Id="LiberatioServiceControl"
+                        Start="install" Stop="both" Remove="both" Name="LiberatioServiceExe" Wait="no" />
+      </Component>
+      
+      <!-- Service CONFIG -->
+      <Component Id="LiberatioConfigurationComponent" Guid="6BA12CF1-7398-4C5E-9EAB-4B1B3B043513">
+        <File Id="LiberatioConfiguration" Source="$(var.Service.TargetDir)\Service.exe.config" KeyPath="yes" />
+      </Component>
+      
+      <!-- Tray EXE -->
+      <Component Id="LiberatioTray" Guid="68491312-2379-418C-B3D8-946959CAE55E">
+        <File Id="LiberatioTrayExeFile" Source="$(var.Tray.TargetPath)" KeyPath="yes" />
+        <File Id="TrayIconFile" Source="$(var.Tray.TargetDir)/gear_16xLG.ico" />
+      </Component>
+
+      <!-- registry run key -->
+      <Component Id="LiberatioTrayRegistryRun" Guid="4969E1BF-F9CE-4D86-AEAF-BE1590266D6F">
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                        KeyPath="yes" Name="Liberatio Tray"
+                        Value="[INSTALLFOLDER]Tray.exe" Type="string" />
+      </Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>
