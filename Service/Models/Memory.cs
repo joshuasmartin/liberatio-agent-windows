@@ -7,17 +7,17 @@ namespace Liberatio.Agent.Service.Models
 {
     public class Memory
     {
-        public string Capacity { get; set; }
-        public string FormFactor { get; set; }
-        public string Manufacturer { get; set; }
-        public string MemoryType { get; set; }
-        public string Speed { get; set; }
+        public string capacity { get; set; }
+        public string form_factor { get; set; }
+        public string manufacturer { get; set; }
+        public string memory_type { get; set; }
+        public string speed { get; set; }
 
         public Memory(string capacity, string formFactor, string manufacturer, string memoryType, string speed)
         {
-            this.Capacity = capacity;
-            this.Manufacturer = manufacturer;
-            this.Speed = speed;
+            this.capacity = capacity;
+            this.manufacturer = manufacturer;
+            this.speed = speed;
 
             // Select text from given integer for the form factor.
             Dictionary<int, string> formFactors = new Dictionary<int, string>();
@@ -47,7 +47,7 @@ namespace Liberatio.Agent.Service.Models
             formFactors.Add(23, "LGA");
 
             int f = int.Parse(formFactor);
-            this.FormFactor = formFactors[f];
+            this.form_factor = formFactors[f];
 
             // Select text from given integer for the memory type.
             Dictionary<int, string> memoryTypes = new Dictionary<int, string>();
@@ -75,7 +75,7 @@ namespace Liberatio.Agent.Service.Models
             memoryTypes.Add(21, "DDR-2");
 
             int t = int.Parse(memoryType);
-            this.MemoryType = memoryTypes[t];
+            this.memory_type = memoryTypes[t];
         }
     }
 }

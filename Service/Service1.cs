@@ -39,7 +39,7 @@ namespace Liberatio.Agent.Service
             LiberatioConfiguration.DiscoverRole();
 
             // start the timer
-            t.Interval = 10 * 1000;
+            t.Interval = 45 * 1000;
             try
             {
                 t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
