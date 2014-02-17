@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -106,6 +107,32 @@ namespace Liberatio.Agent.Service
             }
 
             return success;
+        }
+
+        public static bool IsRegistered()
+        {
+            bool found = false;
+
+            try
+            {
+                var client = new RestClient("http://liberatio.herokuapp.com");
+                var request = new RestRequest("nodes/registered.json", Method.GET);
+
+                request.AddParameter("uuid", GetValue("uuid"), ParameterType.QueryString);
+
+                // execute the request
+                RestResponse response = (RestResponse)client.Execute(request);
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    found = true;
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
+            }
+
+            return found;
         }
     }
 }

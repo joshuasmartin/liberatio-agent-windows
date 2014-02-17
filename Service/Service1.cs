@@ -73,7 +73,7 @@ namespace Liberatio.Agent.Service
             //commandsClient.stop();
         }
 
-        private static void OnTimedEvent(object source, ElapsedEventArgs e)
+        private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
             EventLog.WriteEntry("LiberatioAgent", "Performing inventory, and sending to Liberatio.com");
             Inventory i = new Inventory();

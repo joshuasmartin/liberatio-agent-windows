@@ -19,6 +19,7 @@ namespace Liberatio.Agent.Service.Models
         public String model_number { get; set; }
         public String serial_number { get; set; }
         public IList<Application> applications { get; set; }
+        public IList<Memory> memory { get; set; }
 
         public Inventory()
         {
@@ -28,14 +29,18 @@ namespace Liberatio.Agent.Service.Models
             location = ConfigurationManager.AppSettings["location"].Trim(); // from config
             role = ConfigurationManager.AppSettings["role"].Trim(); // from config
             model_number = getModelNumber();
-            applications = getApplications();
             serial_number = getSerialNumber();
+            applications = getApplications();
+            memory = getMemory();
         }
 
         public void Send()
         {
             try
             {
+
+                EventLog.WriteEntry("LiberatioAgent", "Starting send", EventLogEntryType.Information);
+
                 // client
                 var client = new RestClient("http://liberatio.herokuapp.com");
                 var request = new RestRequest("inventories.json", Method.POST);
@@ -50,6 +55,8 @@ namespace Liberatio.Agent.Service.Models
                 // data
                 String json = JsonConvert.SerializeObject(new { inventory = this }, Formatting.Indented);
                 request.AddParameter("application/json", json, ParameterType.RequestBody);
+
+                EventLog.WriteEntry("LiberatioAgent", json, EventLogEntryType.Information);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
@@ -170,6 +177,33 @@ namespace Liberatio.Agent.Service.Models
                             }
                         }
                     }
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Acquires the information about each memory module via WMI.
+        /// </summary>
+        /// <returns>A list of memory modules</returns>
+        private List<Memory> getMemory()
+        {
+            List<Memory> list = new List<Memory>();
+            try
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Capacity,FormFactor,Manufacturer,MemoryType,Speed FROM Win32_PhysicalMemory");
+                foreach (ManagementObject os in searcher.Get())
+                {
+                    list.Add(new Memory(os["Capacity"].ToString(),
+                                        os["FormFactor"].ToString(),
+                                        os["Manufacturer"].ToString(),
+                                        os["MemoryType"].ToString(),
+                                        os["Speed"].ToString()));
                 }
             }
             catch (Exception exception)

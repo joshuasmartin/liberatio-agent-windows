@@ -18,7 +18,7 @@ namespace Liberatio.Agent.Service
         string GetValueFromConfiguration(string key);
 
         [OperationContract]
-        bool IsRegistered(string uuid);
+        bool IsRegistered();
     }
 
     public class ConsoleService : IConsoleService
@@ -33,30 +33,9 @@ namespace Liberatio.Agent.Service
             return LiberatioConfiguration.GetValue(key);
         }
 
-        public bool IsRegistered(string uuid)
+        public bool IsRegistered()
         {
-            bool found = false;
-
-            try
-            {
-                var client = new RestClient("http://liberatio.herokuapp.com");
-                var request = new RestRequest("nodes/registered.json", Method.GET);
-
-                request.AddParameter("uuid", uuid, ParameterType.QueryString);
-
-                // execute the request
-                RestResponse response = (RestResponse)client.Execute(request);
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    found = true;
-                }
-            }
-            catch (Exception exception)
-            {
-                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
-            }
-
-            return found;
+            return LiberatioConfiguration.IsRegistered();
         }
     }
 }

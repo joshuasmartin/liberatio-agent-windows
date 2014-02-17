@@ -80,6 +80,7 @@
     <Compile Include="Models\Inventory.cs" />
     <Compile Include="CommandsClient.cs" />
     <Compile Include="LiberatioConfiguration.cs" />
+    <Compile Include="Models\Memory.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>

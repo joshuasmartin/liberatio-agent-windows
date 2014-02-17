@@ -25,7 +25,7 @@ namespace Liberatio.Agent.Tray
         string GetValueFromConfiguration(string key);
 
         [OperationContract]
-        bool IsRegistered(string uuid);
+        bool IsRegistered();
     }
 
     public partial class FormConsole : Form
@@ -100,7 +100,7 @@ namespace Liberatio.Agent.Tray
             IConsoleService pipeProxy = OpenChannelToService();
 
             // determine if the uuid is registered
-            if (pipeProxy.IsRegistered(txtUuid.Text))
+            if (pipeProxy.IsRegistered())
             {
                 lblConnectionStatusValue.Text = "Registered";
                 lblConnectionStatusValue.ForeColor = Color.Green;
