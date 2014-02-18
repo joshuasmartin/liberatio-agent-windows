@@ -11,15 +11,16 @@ namespace Liberatio.Agent.Service.Models
 {
     public class Inventory
     {
-        public String uuid { get; set; }
-        public String name { get; set; }
-        public String operating_system { get; set; }
-        public String location { get; set; }
-        public String role { get; set; }
-        public String model_number { get; set; }
-        public String serial_number { get; set; }
+        public string uuid { get; set; }
+        public string name { get; set; }
+        public string operating_system { get; set; }
+        public string location { get; set; }
+        public string role { get; set; }
+        public string model_number { get; set; }
+        public string serial_number { get; set; }
         public IList<Application> applications { get; set; }
         public IList<Memory> memory { get; set; }
+        public IList<Processor> processor { get; set; }
 
         public Inventory()
         {
@@ -32,6 +33,7 @@ namespace Liberatio.Agent.Service.Models
             serial_number = getSerialNumber();
             applications = getApplications();
             memory = getMemory();
+            processor = getProcessor();
         }
 
         public void Send()
@@ -85,7 +87,7 @@ namespace Liberatio.Agent.Service.Models
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Caption FROM Win32_OperatingSystem");
             foreach (ManagementObject os in searcher.Get())
             {
-                result = os["Caption"].ToString();
+                result = os["Caption"].ToString().Replace("Microsoft ", "");
                 break;
             }
             return result;
@@ -204,6 +206,32 @@ namespace Liberatio.Agent.Service.Models
                                         os["Manufacturer"].ToString(),
                                         os["MemoryType"].ToString(),
                                         os["Speed"].ToString()));
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Acquires the information about each processor via WMI.
+        /// </summary>
+        /// <returns>A list of processors</returns>
+        private List<Processor> getProcessor()
+        {
+            List<Processor> list = new List<Processor>();
+            try
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Architecture,MaxClockSpeed,Name,NumberOfCores FROM Win32_Processor");
+                foreach (ManagementObject os in searcher.Get())
+                {
+                    list.Add(new Processor(os["Name"].ToString(),
+                                        os["NumberOfCores"].ToString(),
+                                        os["MaxClockSpeed"].ToString(),
+                                        os["Architecture"].ToString()));
                 }
             }
             catch (Exception exception)
