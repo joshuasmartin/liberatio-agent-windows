@@ -56,7 +56,7 @@
       </Component>
       
       <!-- Service CONFIG -->
-      <Component Id="LiberatioConfigurationComponent" Guid="6BA12CF1-7398-4C5E-9EAB-4B1B3B043513">
+      <Component Id="LiberatioConfigurationComponent" Guid="6BA12CF1-7398-4C5E-9EAB-4B1B3B043513" Permanent="yes">
         <File Id="LiberatioConfiguration" Source="$(var.Service.TargetDir)\Service.exe.config" KeyPath="yes" />
       </Component>
       
