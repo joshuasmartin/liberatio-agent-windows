@@ -21,6 +21,7 @@ namespace Liberatio.Agent.Service.Models
         public IList<Application> applications { get; set; }
         public IList<Memory> memory { get; set; }
         public IList<Processor> processor { get; set; }
+        public IList<Disk> disks { get; set; }
 
         public Inventory()
         {
@@ -34,6 +35,7 @@ namespace Liberatio.Agent.Service.Models
             applications = getApplications();
             memory = getMemory();
             processor = getProcessor();
+            disks = getDisks();
         }
 
         public void Send()
@@ -65,10 +67,10 @@ namespace Liberatio.Agent.Service.Models
                 var content = response.Content; // raw content as string
 
                 // clear the registration code
-                if (registrationCode.Length != 0)
-                {
-                    LiberatioConfiguration.UpdateValue("registrationCode", "");
-                }
+                //if (registrationCode.Length != 0)
+                //{
+                //    LiberatioConfiguration.UpdateValue("registrationCode", "");
+                //}
             }
             catch (Exception exception)
             {
@@ -240,6 +242,48 @@ namespace Liberatio.Agent.Service.Models
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// Acquires the information about each disk via WMI.
+        /// </summary>
+        /// <returns>A list of disks</returns>
+        private List<Disk> getDisks()
+        {
+            List<Disk> list = new List<Disk>();
+            try
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT DriveType,FileSystem,FreeSpace,Size,VolumeName FROM Win32_LogicalDisk");
+                foreach (ManagementObject o in searcher.Get())
+                {
+                    string drive_type = GetValueFromKey(o["DriveType"]);
+                    string file_system = GetValueFromKey(o["FileSystem"]);
+                    string free_bytes = GetValueFromKey(o["FreeSpace"]);
+                    string total_bytes = GetValueFromKey(o["Size"]);
+                    string volume_name = GetValueFromKey(o["VolumeName"]);
+
+                    list.Add(new Disk(  drive_type, file_system, free_bytes,
+                                        total_bytes, volume_name));
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
+
+            return list;
+        }
+
+        private string GetValueFromKey(object o)
+        {
+            string value = "";
+
+            if (o != null)
+            {
+                value = o.ToString();
+            }
+
+            return value;
         }
     }
 }
