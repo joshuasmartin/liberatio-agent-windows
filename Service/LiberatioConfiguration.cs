@@ -71,6 +71,50 @@ namespace Liberatio.Agent.Service
         }
 
         /// <summary>
+        /// Checks the configuration file to see if there is a value in
+        /// "registrationCode" - if so, it registers the device with the
+        /// organization that the code belongs to.
+        /// </summary>
+        public static void RegisterIfNecessary()
+        {
+            // Return if there is no registration code.
+            if (GetValue("registrationCode").Trim().Length == 0)
+                return;
+
+            // POST the UUID and the registration code to the server, if
+            // the request is successful, it will return the token which
+            // will be sent in all communique to authenticate the Agent.
+            try
+            {
+                var client = new RestClient("http://liberatio.herokuapp.com");
+                var request = new RestRequest("nodes/register.json", Method.POST);
+
+                request.AddParameter("uuid", GetValue("uuid"), ParameterType.QueryString);
+                request.AddParameter("registration_code", GetValue("registrationCode"), ParameterType.QueryString);
+
+                // execute the request
+                RestResponse response = (RestResponse)client.Execute(request);
+
+                switch (response.StatusCode)
+                {
+                    case System.Net.HttpStatusCode.OK:
+                        var content = response.Content;
+                        break;
+                    case System.Net.HttpStatusCode.Forbidden:
+                        string error = @"Registration Failed. Check the
+                                         registration code you provided and try again.";
+                        EventLog.WriteEntry("LiberatioAgent", error, EventLogEntryType.Error);
+                        Environment.Exit(1);
+                        break;
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
+            }
+        }
+
+        /// <summary>
         /// Returns the value in the configuration file for the given key.
         /// </summary>
         /// <param name="key"></param>

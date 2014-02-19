@@ -38,6 +38,9 @@ namespace Liberatio.Agent.Service
             // attempt to discover role
             LiberatioConfiguration.DiscoverRole();
 
+            // check for registration code
+            LiberatioConfiguration.RegisterIfNecessary();
+
             // start the timer
             t.Interval = 45 * 1000;
             try
