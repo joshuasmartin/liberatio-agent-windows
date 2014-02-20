@@ -12,6 +12,7 @@ namespace Liberatio.Agent.Service.Models
     public class Inventory
     {
         public string uuid { get; set; }
+        public string token { get; set; }
         public string name { get; set; }
         public string operating_system { get; set; }
         public string location { get; set; }
@@ -26,6 +27,7 @@ namespace Liberatio.Agent.Service.Models
         public Inventory()
         {
             uuid = ConfigurationManager.AppSettings["uuid"].Trim(); // from config
+            token = ConfigurationManager.AppSettings["token"].Trim(); // from config
             name = System.Environment.MachineName;
             operating_system = getOperatingSystem();
             location = ConfigurationManager.AppSettings["location"].Trim(); // from config
@@ -49,14 +51,7 @@ namespace Liberatio.Agent.Service.Models
                 var client = new RestClient("http://liberatio.herokuapp.com");
                 var request = new RestRequest("inventories.json", Method.POST);
 
-                // add registration code if it's available
-                string registrationCode = LiberatioConfiguration.GetValue("registrationCode");
-                if (registrationCode.Length != 0)
-                {
-                    request.AddParameter("registration_code", registrationCode, ParameterType.QueryString);
-                }
-
-                // data
+                // payload
                 String json = JsonConvert.SerializeObject(new { inventory = this }, Formatting.Indented);
                 request.AddParameter("application/json", json, ParameterType.RequestBody);
 
@@ -64,13 +59,19 @@ namespace Liberatio.Agent.Service.Models
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
-                var content = response.Content; // raw content as string
+                var content = response.Content;
 
-                // clear the registration code
-                //if (registrationCode.Length != 0)
-                //{
-                //    LiberatioConfiguration.UpdateValue("registrationCode", "");
-                //}
+                switch ((int)response.StatusCode)
+                {
+                    case 200:
+                        break;
+                    case 422:
+                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
+                        break;
+                    default:
+                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
+                        break;
+                }
             }
             catch (Exception exception)
             {

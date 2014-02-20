@@ -1,4 +1,6 @@
-﻿using RestSharp;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -77,6 +79,19 @@ namespace Liberatio.Agent.Service
         /// </summary>
         public static void RegisterIfNecessary()
         {
+            // Exit the application if there is no code and no token.
+            // The Agent will never be able to make contact with the
+            // server without one or the other.
+            if ((GetValue("registrationCode").Trim().Length == 0) &&
+                (GetValue("communicationToken").Trim().Length == 0))
+            {
+                EventLog.WriteEntry("LiberatioAgent",
+                    "No communcations token and no registration code. " +
+                    "Provide the registration code for a token to be " +
+                    "retrieved or a valid token.", EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+
             // Return if there is no registration code.
             if (GetValue("registrationCode").Trim().Length == 0)
                 return;
@@ -94,16 +109,27 @@ namespace Liberatio.Agent.Service
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
+                var content = response.Content;
 
-                switch (response.StatusCode)
+                switch ((int)response.StatusCode)
                 {
-                    case System.Net.HttpStatusCode.OK:
-                        var content = response.Content;
+                    case 200:
+                        var json = (JObject)JsonConvert.DeserializeObject(content);
+                        string uuid = json["uuid"].ToString();
+                        string token = json["token"].ToString();
+
+                        if (uuid == GetValue("uuid"))
+                        {
+                            UpdateValue("communicationToken", token);
+                        }
+
                         break;
-                    case System.Net.HttpStatusCode.Forbidden:
-                        string error = @"Registration Failed. Check the
-                                         registration code you provided and try again.";
-                        EventLog.WriteEntry("LiberatioAgent", error, EventLogEntryType.Error);
+                    case 422:
+                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
+                        Environment.Exit(1);
+                        break;
+                    default:
+                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
                         Environment.Exit(1);
                         break;
                 }
