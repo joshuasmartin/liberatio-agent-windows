@@ -121,16 +121,16 @@ namespace Liberatio.Agent.Service
                         if (uuid == GetValue("uuid"))
                         {
                             UpdateValue("communicationToken", token);
+                            UpdateValue("registrationCode", "");
                         }
 
                         break;
                     case 422:
-                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
+                        EventLog.WriteEntry("LiberatioAgent", "Failed to register " + content, EventLogEntryType.Error);
                         Environment.Exit(1);
                         break;
                     default:
-                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
-                        Environment.Exit(1);
+                        EventLog.WriteEntry("LiberatioAgent", "Failed to register " + content, EventLogEntryType.Error);
                         break;
                 }
             }

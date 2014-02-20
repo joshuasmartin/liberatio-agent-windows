@@ -27,7 +27,7 @@ namespace Liberatio.Agent.Service.Models
         public Inventory()
         {
             uuid = ConfigurationManager.AppSettings["uuid"].Trim(); // from config
-            token = ConfigurationManager.AppSettings["token"].Trim(); // from config
+            token = ConfigurationManager.AppSettings["communicationToken"].Trim(); // from config
             name = System.Environment.MachineName;
             operating_system = getOperatingSystem();
             location = ConfigurationManager.AppSettings["location"].Trim(); // from config
@@ -66,10 +66,10 @@ namespace Liberatio.Agent.Service.Models
                     case 200:
                         break;
                     case 422:
-                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
+                        EventLog.WriteEntry("LiberatioAgent", "Failed to inventory " + content, EventLogEntryType.Error);
                         break;
                     default:
-                        EventLog.WriteEntry("LiberatioAgent", content, EventLogEntryType.Error);
+                        EventLog.WriteEntry("LiberatioAgent", "Failed to inventory " + content, EventLogEntryType.Error);
                         break;
                 }
             }
