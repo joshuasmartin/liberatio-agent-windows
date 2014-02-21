@@ -59,8 +59,8 @@ namespace Liberatio.Agent.Service
             host.AddServiceEndpoint(typeof(IConsoleService), new NetNamedPipeBinding(), "ConsoleService");
             host.Open(); // start the named pipe WCF host
 
-            // Start the command
-            //commandsClient.start();
+            // Start listening for commands to execute.
+            commandsClient.Start();
         }
 
         /// <summary>
@@ -72,8 +72,8 @@ namespace Liberatio.Agent.Service
             t.Enabled = false;
             host.Close();
 
-            // stop the Liberatio Commands web socket client
-            //commandsClient.stop();
+            // Stop listening.
+            commandsClient.Stop();
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)

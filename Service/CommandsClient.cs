@@ -16,16 +16,23 @@ namespace Liberatio.Agent.Service
 
         public CommandsClient()
         {
-            _pusher = new Pusher("application key");
-            _pusher.Connected += pusher_Connected;
+            try
+            {
+                _pusher = new Pusher("b64eb9cae3befce08a2f");
+                _pusher.Connected += pusher_Connected;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
         }
 
-        public void start()
+        public void Start()
         {
             _pusher.Connect();
         }
 
-        public void stop()
+        public void Stop()
         {
             _pusher.Disconnect();
         }
@@ -39,7 +46,7 @@ namespace Liberatio.Agent.Service
         {
             string uuid = LiberatioConfiguration.GetValue("uuid");
 
-            _cmdChannel = _pusher.Subscribe(string.Format("private-cmd_{0}", uuid));
+            _cmdChannel = _pusher.Subscribe(string.Format("cmd_{0}", uuid));
             _cmdChannel.Subscribed += _cmdChannel_Subscribed;
         }
 
@@ -48,7 +55,7 @@ namespace Liberatio.Agent.Service
             _cmdChannel.Bind("commands.run", (dynamic data) =>
             {
                 string command = data.message;
-                Console.WriteLine("[" + data.name + "] " + data.message);
+                EventLog.WriteEntry("LiberatioAgent", "Data is " + data, EventLogEntryType.Information);
             });
         }
 

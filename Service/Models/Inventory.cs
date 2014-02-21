@@ -44,7 +44,6 @@ namespace Liberatio.Agent.Service.Models
         {
             try
             {
-
                 EventLog.WriteEntry("LiberatioAgent", "Starting send", EventLogEntryType.Information);
 
                 // client
@@ -55,7 +54,7 @@ namespace Liberatio.Agent.Service.Models
                 String json = JsonConvert.SerializeObject(new { inventory = this }, Formatting.Indented);
                 request.AddParameter("application/json", json, ParameterType.RequestBody);
 
-                EventLog.WriteEntry("LiberatioAgent", json, EventLogEntryType.Information);
+                //EventLog.WriteEntry("LiberatioAgent", json, EventLogEntryType.Information);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
