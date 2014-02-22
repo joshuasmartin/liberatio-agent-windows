@@ -42,16 +42,21 @@ namespace Liberatio.Agent.Service
             LiberatioConfiguration.RegisterIfNecessary();
 
             // start the timer
-            t.Interval = 45 * 1000;
+            string interval = LiberatioConfiguration.GetValue("inventoryInterval");
             try
             {
+                if (interval.Length == 0)
+                    throw new Exception("Invalid inventoryInterval. Verify that the interval is an integer.");
+                t.Interval = int.Parse(interval) * 1000;
+
                 t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+                t.Enabled = true;
             }
             catch (Exception exception)
             {
-                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
             }
-            t.Enabled = true;
 
             // start the console service
             host = new ServiceHost(typeof(ConsoleService),

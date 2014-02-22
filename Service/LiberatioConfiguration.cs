@@ -145,9 +145,17 @@ namespace Liberatio.Agent.Service
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static String GetValue(String key)
+        public static string GetValue(string key)
         {
-            return ConfigurationManager.AppSettings[key].ToString().Trim();
+            string value = "";
+
+            try
+            {
+                value = ConfigurationManager.AppSettings[key].ToString().Trim();
+            }
+            catch (Exception) {}
+
+            return value;
         }
 
         /// <summary>

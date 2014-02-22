@@ -1,4 +1,6 @@
-﻿using PusherClient;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using PusherClient;
 using SuperSocket.ClientEngine;
 using System;
 using System.Collections.Generic;
@@ -54,9 +56,62 @@ namespace Liberatio.Agent.Service
         {
             _cmdChannel.Bind("commands.run", (dynamic data) =>
             {
-                string command = data.message;
                 EventLog.WriteEntry("LiberatioAgent", "Data is " + data, EventLogEntryType.Information);
+                JObject message = (JObject)JsonConvert.DeserializeObject(Convert.ToString(data));
+                JArray commands = (JArray)message["commands"];
+
+                foreach (JToken c in commands)
+                {
+                    string s = c.ToString();
+                    EventLog.WriteEntry("LiberatioAgent", "command is " + s, EventLogEntryType.Information);
+                    string path = Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe");
+
+                    ProcessStartInfo i = null;
+                    Process p = null;
+
+                    switch (s)
+                    {
+                        case "reboot":
+                            i = new ProcessStartInfo(path, "/r /c \"Liberatio has initiated a *reboot* of your computer - you have 1 minute.\" /t 60");
+                            i.UseShellExecute = false;
+                            i.RedirectStandardOutput = true;
+                            i.RedirectStandardError = true;
+                            p = new Process();
+                            p.StartInfo = i;
+                            p.OutputDataReceived += CaptureOutput;
+                            p.ErrorDataReceived += CaptureError;
+                            p.Start();
+                            p.BeginOutputReadLine();
+                            p.BeginErrorReadLine();
+                            p.WaitForExit();
+                            break;
+                        case "shutdown":
+                            i = new ProcessStartInfo(path, "/s /c \"Liberatio has initiated a *shutdown* of your computer - you have 1 minute.\" /t 60");
+                            i.UseShellExecute = false;
+                            i.RedirectStandardOutput = true;
+                            i.RedirectStandardError = true;
+                            p = new Process();
+                            p.StartInfo = i;
+                            p.OutputDataReceived += CaptureOutput;
+                            p.ErrorDataReceived += CaptureError;
+                            p.Start();
+                            p.BeginOutputReadLine();
+                            p.BeginErrorReadLine();
+                            p.WaitForExit();
+                            break;
+                    }
+                }
             });
+        }
+
+        private void CaptureOutput(object sender, System.Diagnostics.DataReceivedEventArgs e)
+        {
+            EventLog.WriteEntry("LiberatioAgent", e.Data, EventLogEntryType.Information);
+        }
+
+        private void CaptureError(object sender, System.Diagnostics.DataReceivedEventArgs e)
+        {
+            EventLog.WriteEntry("LiberatioAgent", e.Data, EventLogEntryType.Warning);
         }
 
         // var triggered = _cmdChannel.trigger('client-someeventname', { your: data });

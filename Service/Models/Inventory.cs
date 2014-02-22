@@ -44,8 +44,6 @@ namespace Liberatio.Agent.Service.Models
         {
             try
             {
-                EventLog.WriteEntry("LiberatioAgent", "Starting send", EventLogEntryType.Information);
-
                 // client
                 var client = new RestClient("http://liberatio.herokuapp.com");
                 var request = new RestRequest("inventories.json", Method.POST);
@@ -54,7 +52,8 @@ namespace Liberatio.Agent.Service.Models
                 String json = JsonConvert.SerializeObject(new { inventory = this }, Formatting.Indented);
                 request.AddParameter("application/json", json, ParameterType.RequestBody);
 
-                //EventLog.WriteEntry("LiberatioAgent", json, EventLogEntryType.Information);
+                var location = System.Reflection.Assembly.GetEntryAssembly().Location;
+                System.IO.File.WriteAllText(string.Format(@"{0}\inventory.txt", System.IO.Path.GetDirectoryName(location)), json);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
