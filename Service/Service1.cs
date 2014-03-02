@@ -11,7 +11,7 @@ namespace Liberatio.Agent.Service
     {
         Timer t = new Timer();
         ServiceHost host;
-        CommandsClient commandsClient = new CommandsClient();
+        CommandManager commandManager = new CommandManager();
 
         public Service1()
         {
@@ -25,31 +25,50 @@ namespace Liberatio.Agent.Service
         /// <param name="args"></param>
         protected override void OnStart(string[] args)
         {
-            // configure logging
+            // Create Windows Event Source if it doesn't exist.
             if (!EventLog.SourceExists("LiberatioAgent"))
             {
                 EventLog.CreateEventSource("LiberatioAgent", "Application");
                 return;
             }
 
-            // verify that there is a valid uuid
+            // Verify that there is a valid uuid.
             LiberatioConfiguration.CheckOrUpdateUuid();
 
-            // attempt to discover role
+            // Attempt to discover role.
             LiberatioConfiguration.DiscoverRole();
 
-            // check for registration code
+            // Check for a registration code.
             LiberatioConfiguration.RegisterIfNecessary();
 
-            // start the timer
-            string interval = LiberatioConfiguration.GetValue("inventoryInterval");
+            // Start the TriggerInventory timer.
             try
             {
-                if (interval.Length == 0)
+                // Perform inventory according to the interval specified.
+                var interval = LiberatioConfiguration.GetValue("inventoryInterval");
+                if ((interval.Length == 0) || (int.Parse(interval) < 30))
                     throw new Exception("Invalid inventoryInterval. Verify that the interval is an integer.");
                 t.Interval = int.Parse(interval) * 1000;
 
-                t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+                t.Elapsed += new ElapsedEventHandler(TriggerInventory);
+                t.Enabled = true;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+
+            // Start the TriggerUpdateManger timer.
+            try
+            {
+                // Perform any setup before using UpdateManager.
+                UpdateManager.Setup();
+
+                // Check for needed updates every 60 minutes.
+                t.Interval = 60 * 1000;
+
+                t.Elapsed += new ElapsedEventHandler(TriggerUpdateManger);
                 t.Enabled = true;
             }
             catch (Exception exception)
@@ -65,7 +84,7 @@ namespace Liberatio.Agent.Service
             host.Open(); // start the named pipe WCF host
 
             // Start listening for commands to execute.
-            commandsClient.Start();
+            commandManager.Start();
         }
 
         /// <summary>
@@ -78,14 +97,20 @@ namespace Liberatio.Agent.Service
             host.Close();
 
             // Stop listening.
-            commandsClient.Stop();
+            commandManager.Stop();
         }
 
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        private void TriggerInventory(object source, ElapsedEventArgs e)
         {
             EventLog.WriteEntry("LiberatioAgent", "Performing inventory, and sending to Liberatio.com");
             Inventory i = new Inventory();
             i.Send();
+        }
+
+        private void TriggerUpdateManger(object source, ElapsedEventArgs e)
+        {
+            UpdateManager.GetInstalled();
+            UpdateManager.GetNeeded();
         }
     }
 }

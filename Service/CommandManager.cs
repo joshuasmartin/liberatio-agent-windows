@@ -11,12 +11,12 @@ using WebSocket4Net;
 
 namespace Liberatio.Agent.Service
 {
-    public class CommandsClient
+    public class CommandManager
     {
         private Pusher _pusher = null;
         private Channel _cmdChannel = null;
 
-        public CommandsClient()
+        public CommandManager()
         {
             try
             {

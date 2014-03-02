@@ -23,6 +23,7 @@ namespace Liberatio.Agent.Service.Models
         public IList<Memory> memory { get; set; }
         public IList<Processor> processor { get; set; }
         public IList<Disk> disks { get; set; }
+        public IList<Update> updates { get; set; }
 
         public Inventory()
         {
@@ -38,6 +39,11 @@ namespace Liberatio.Agent.Service.Models
             memory = getMemory();
             processor = getProcessor();
             disks = getDisks();
+
+            List<Update> all = new List<Update>();
+            all.AddRange(UpdateManager.Installed);
+            all.AddRange(UpdateManager.Needed);
+            updates = all;
         }
 
         public void Send()
