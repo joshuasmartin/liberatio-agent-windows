@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Management;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Liberatio.Agent.Service.Models
 {
@@ -44,6 +47,8 @@ namespace Liberatio.Agent.Service.Models
             all.AddRange(UpdateManager.Installed);
             all.AddRange(UpdateManager.Needed);
             updates = all;
+
+            CheckAntivirus();
         }
 
         public void Send()
@@ -277,6 +282,60 @@ namespace Liberatio.Agent.Service.Models
             }
 
             return list;
+        }
+
+        private void CheckAntivirus()
+        {
+            try
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_SystemDriver");
+                foreach (ManagementObject o in searcher.Get())
+                {
+                    try
+                    {
+                        FileInfo f = new FileInfo(GetValueFromKey(o["PathName"]));
+                        string name = f.Name;
+
+                        if (name.ToLower() == "mpfilter.sys")
+                        {
+                            EventLog.WriteEntry("LiberatioAgent", GetValueFromKey(o["PathName"]), EventLogEntryType.Information);
+
+                            string concat = "";
+
+                            concat += GetValueFromKey(o["DisplayName"]);
+                            concat += " ";
+                            concat += GetValueFromKey(o["PathName"]);
+
+                            // Check the digital signature of the driver at the given path from WMI.
+                            // The method used to check the signature will throw an exception if it
+                            // cannot get the certificate for the signature, meaning for us, that the
+                            // certificate is invalid or non-existant.
+                            try
+                            {
+                                var certificate = X509Certificate.CreateFromSignedFile(f.FullName);
+                                EventLog.WriteEntry("LiberatioAgent", certificate.Subject, EventLogEntryType.Information);
+                                EventLog.WriteEntry("LiberatioAgent", certificate.Issuer, EventLogEntryType.Information);
+                            }
+                            catch (Exception)
+                            {
+                                EventLog.WriteEntry("LiberatioAgent", "Signature cannot be verified.", EventLogEntryType.Information);
+                            }
+                        }
+                    }
+                    catch (ArgumentException)
+                    {
+
+                    }
+                    catch (Exception exception)
+                    {
+                        EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
         }
 
         private string GetValueFromKey(object o)
