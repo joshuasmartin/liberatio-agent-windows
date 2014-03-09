@@ -1,12 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.DirectoryServices.AccountManagement;
+using System.IO;
 using System.Linq;
 using System.Management;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Liberatio.Agent.Service
@@ -211,6 +215,213 @@ namespace Liberatio.Agent.Service
             }
 
             return found;
+        }
+
+        /// <summary>
+        /// Creates the "liberatio" Administrator account on the system if it
+        /// does not exist already. If it does exist, it changes the password.
+        /// The password is encrypted by Windows DPAPI and stored in a file
+        /// called "auth.dat" whose contents can only be decrypted by the
+        /// LocalSystem account.
+        /// </summary>
+        public static void CreateOrUpdateLiberatioUser()
+        {
+            string password = CreateSecureRandomString(20);
+
+            try
+            {
+                PrincipalContext context = new PrincipalContext(ContextType.Machine, Environment.MachineName);
+                UserPrincipal userPrincipal = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, "liberatio");
+
+                // Either create or change password. Make sure that the account
+                // is disabled, cannot change the password, and has a password
+                // that never expires.
+                if (userPrincipal == null)
+                {
+                    userPrincipal = new UserPrincipal(context, "liberatio", password, false);
+                    userPrincipal.UserCannotChangePassword = true;
+                    userPrincipal.PasswordNeverExpires = false;
+                    userPrincipal.Save();
+                }
+                else
+                {
+                    userPrincipal.UserCannotChangePassword = true;
+                    userPrincipal.PasswordNeverExpires = false;
+                    userPrincipal.Enabled = false;
+                    userPrincipal.SetPassword(password);
+                    userPrincipal.Save();
+                }
+
+                // Ensure user is in the Administrators group.
+                GroupPrincipal groupPrincipal = GroupPrincipal.FindByIdentity(context, "Administrators");
+                if (!groupPrincipal.Members.Contains(userPrincipal))
+                {
+                    groupPrincipal.Members.Add(userPrincipal);
+                    groupPrincipal.Save();
+                }
+                groupPrincipal.Dispose();
+
+                // Save the password to a file for using later. Will be
+                // encrypted using DPAPI and will be accessible to the
+                // LocalSystem user only.
+                byte[] toEncrypt = UnicodeEncoding.ASCII.GetBytes(password);
+                byte[] entropy = CreateRandomEntropy();
+
+                var location = System.Reflection.Assembly.GetEntryAssembly().Location;
+                var path = string.Format(@"{0}\{1}", System.IO.Path.GetDirectoryName(location), "auth.dat");
+
+                // Encrypt a copy of the data to the stream.
+                FileStream stream = new FileStream(path, FileMode.OpenOrCreate);
+                int bytesWritten = EncryptDataToStream(toEncrypt, entropy, DataProtectionScope.CurrentUser, stream);
+                stream.Close();
+
+                // Do not show the user on the Windows login screen.
+                HideUserInRegistry();
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", "Failed to create or update the liberatio Windows account.",
+                                    EventLogEntryType.Error);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+        }
+
+        /// <summary>
+        /// Adds a DWORD value to the SpecialAccounts\UserList registry key
+        /// in order to hide the "liberatio" Windows account from the Windows
+        /// login screen.
+        /// </summary>
+        private static void HideUserInRegistry()
+        {
+            try
+            {
+                String listKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinLogon\SpecialAccounts\UserList";
+                using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(listKey))
+                {
+                    // Create the UserList key if it doesn't exist.
+                    if (key == null)
+                        Registry.LocalMachine.CreateSubKey(listKey);
+
+                    // Always set the value of "liberatio" DWORD to 0
+                    key.SetValue("liberatio", 0, RegistryValueKind.DWord);
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent",
+                                    @"Failed to add the 'liberatio' value to the SpecialAccounts\UserList registry key",
+                                    EventLogEntryType.Warning);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Used from http://stackoverflow.com/a/8996788
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        private static string CreateSecureRandomString(int length)
+        {
+            char[] AvailableCharacters = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
+                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
+                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
+            };
+
+            char[] identifier = new char[length];
+            byte[] randomData = new byte[length];
+
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(randomData);
+            }
+
+            for (int idx = 0; idx < identifier.Length; idx++)
+            {
+                int pos = randomData[idx] % AvailableCharacters.Length;
+                identifier[idx] = AvailableCharacters[pos];
+            }
+
+            return new string(identifier);
+        }
+
+        private static byte[] CreateRandomEntropy()
+        {
+            // Create a byte array to hold the random value. 
+            byte[] entropy = new byte[16];
+
+            // Create a new instance of the RNGCryptoServiceProvider. 
+            // Fill the array with a random value. 
+            new RNGCryptoServiceProvider().GetBytes(entropy);
+
+            // Return the array. 
+            return entropy;
+        }
+
+        private static int EncryptDataToStream(byte[] Buffer, byte[] Entropy, DataProtectionScope Scope, Stream S)
+        {
+            if (Buffer.Length <= 0)
+                throw new ArgumentException("Buffer");
+            if (Buffer == null)
+                throw new ArgumentNullException("Buffer");
+            if (Entropy.Length <= 0)
+                throw new ArgumentException("Entropy");
+            if (Entropy == null)
+                throw new ArgumentNullException("Entropy");
+            if (S == null)
+                throw new ArgumentNullException("S");
+
+            int length = 0;
+
+            // Encrypt the data in memory. The result is stored in the same same array as the original data. 
+            byte[] encrptedData = ProtectedData.Protect(Buffer, Entropy, Scope);
+
+            // Write the encrypted data to a stream. 
+            if (S.CanWrite && encrptedData != null)
+            {
+                S.Write(encrptedData, 0, encrptedData.Length);
+
+                length = encrptedData.Length;
+            }
+
+            // Return the length that was written to the stream.  
+            return length;
+
+        }
+
+        private static byte[] DecryptDataFromStream(byte[] Entropy, DataProtectionScope Scope, Stream S, int Length)
+        {
+            if (S == null)
+                throw new ArgumentNullException("S");
+            if (Length <= 0)
+                throw new ArgumentException("Length");
+            if (Entropy == null)
+                throw new ArgumentNullException("Entropy");
+            if (Entropy.Length <= 0)
+                throw new ArgumentException("Entropy");
+
+
+
+            byte[] inBuffer = new byte[Length];
+            byte[] outBuffer;
+
+            // Read the encrypted data from a stream. 
+            if (S.CanRead)
+            {
+                S.Read(inBuffer, 0, Length);
+
+                outBuffer = ProtectedData.Unprotect(inBuffer, Entropy, Scope);
+            }
+            else
+            {
+                throw new IOException("Could not read the stream.");
+            }
+
+            // Return the length that was written to the stream.  
+            return outBuffer;
         }
     }
 }
