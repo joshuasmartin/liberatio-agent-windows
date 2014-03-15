@@ -85,6 +85,21 @@ namespace Liberatio.Agent.Service
                 Environment.Exit(1);
             }
 
+            // Start the TriggerUpdateCheck timer.
+            try
+            {
+                // Check for updates every 60 minutes.
+                t.Interval = 60 * 1000;
+
+                t.Elapsed += new ElapsedEventHandler(TriggerUpdateCheck);
+                t.Enabled = true;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+
             // start the console service
             host = new ServiceHost(typeof(ConsoleService),
                                             new Uri[] { new Uri("net.pipe://localhost") });
@@ -119,6 +134,11 @@ namespace Liberatio.Agent.Service
         {
             UpdateManager.GetInstalled();
             UpdateManager.GetNeeded();
+        }
+
+        private void TriggerUpdateCheck(object source, ElapsedEventArgs e)
+        {
+            LiberatioConfiguration.CheckForUpdates();
         }
     }
 }

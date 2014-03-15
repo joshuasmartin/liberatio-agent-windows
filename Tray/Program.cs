@@ -20,14 +20,15 @@ namespace Liberatio.Agent.Tray
             // the notify icon
             NotifyIcon notify = new NotifyIcon();
             notify.Text = "Liberatio Agent";
-            notify.Icon = new Icon("gear_16xLG.ico");
+            notify.Icon = new Icon("logo.ico");
+            notify.MouseClick += new MouseEventHandler(notify_MouseClick);
 
             // build the menu
             ContextMenu menu = new ContextMenu();
             notify.ContextMenu = menu;
 
             // show console menu item
-            MenuItem itemShowConsole = new MenuItem("Show Console");
+            MenuItem itemShowConsole = new MenuItem("Open");
             itemShowConsole.Click += new EventHandler(itemShowConsole_Click);
             menu.MenuItems.Add(itemShowConsole);
 
@@ -45,6 +46,11 @@ namespace Liberatio.Agent.Tray
             Application.Run();
 
             notify.Visible = false;
+        }
+
+        private static void notify_MouseClick(object sender, MouseEventArgs e)
+        {
+            new FormConsole().Show();
         }
 
         private static void itemClose_Click(object Sender, EventArgs e)

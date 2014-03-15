@@ -47,8 +47,6 @@ namespace Liberatio.Agent.Service.Models
             all.AddRange(UpdateManager.Installed);
             all.AddRange(UpdateManager.Needed);
             updates = all;
-
-            CheckAntivirus();
         }
 
         public void Send()

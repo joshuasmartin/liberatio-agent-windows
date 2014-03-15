@@ -77,7 +77,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.progressBar});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 239);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 240);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(434, 22);
             this.statusStrip1.TabIndex = 6;
@@ -168,7 +168,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(434, 261);
+            this.ClientSize = new System.Drawing.Size(434, 262);
             this.Controls.Add(this.btnConnect);
             this.Controls.Add(this.lblConnectionStatus);
             this.Controls.Add(this.lblConnectionStatusValue);
@@ -186,7 +186,7 @@
             this.MinimumSize = new System.Drawing.Size(450, 300);
             this.Name = "FormConsole";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Liberatio Agent Console";
+            this.Text = "Liberatio Agent";
             this.Load += new System.EventHandler(this.FormConsole_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();

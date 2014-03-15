@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 	<Product Id="2413543B-9EBC-49C7-813A-F200796AF300" Name="Liberatio Agent" Language="1033" Version="1.0.0.0" Manufacturer="Liberatio" UpgradeCode="021F5537-12A1-4F37-A3BC-9D181B35FB54">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
@@ -63,7 +64,7 @@
       <!-- Tray EXE -->
       <Component Id="LiberatioTray" Guid="68491312-2379-418C-B3D8-946959CAE55E">
         <File Id="LiberatioTrayExeFile" Source="$(var.Tray.TargetPath)" KeyPath="yes" />
-        <File Id="TrayIconFile" Source="$(var.Tray.TargetDir)/gear_16xLG.ico" />
+        <File Id="TrayIconFile" Source="$(var.Tray.TargetDir)/logo.ico" />
       </Component>
 
       <!-- registry run key -->
@@ -71,6 +72,11 @@
         <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run"
                         KeyPath="yes" Name="Liberatio Tray"
                         Value="[INSTALLFOLDER]Tray.exe" Type="string" />
+      </Component>
+      
+      <!-- Only Delete the Liberatio User -->
+      <Component Id="UserComponent" Guid="84A5F5B9-8A33-4182-8FC7-DA70763EA5EC" KeyPath="yes">
+        <util:User Id="User" CreateUser="no" RemoveOnUninstall="yes" Name="liberatio" FailIfExists="no"  UpdateIfExists="yes" />
       </Component>
 		</ComponentGroup>
 	</Fragment>
