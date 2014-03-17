@@ -429,44 +429,5 @@ namespace Liberatio.Agent.Service
             // Return the length that was written to the stream.  
             return outBuffer;
         }
-
-        public static void CheckForUpdates()
-        {
-            try
-            {
-                //var client = new RestClient("http://liberatio.herokuapp.com");
-                //var request = new RestRequest("nodes/registered.json", Method.GET);
-
-                //// execute the request
-                //RestResponse response = (RestResponse)client.Execute(request);
-
-                //if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                //{
-                //    string content = response.Content;
-                //    // { windows: { 'version': '1.0.0.0', 'md5sum': 'thesum', 'url': 'theurl' } }
-
-                //    string url = "http://www.documents.com/docName.txt";
-                //    string localPath = @"C://Local//docName.txt";
-
-                //    using (WebClient client = new WebClient())
-                //    {
-                //        client.DownloadFile(url, localPath);
-                //    }
-
-                //    using (var sha2 = SHA256Managed.Create())
-                //    {
-                //        using (var stream = File.OpenRead("pathToFile"))
-                //        {
-                //            byte[] hashValue = sha2.ComputeHash(stream);
-                //            string s = BitConverter.ToString(hashValue).Replace("-", String.Empty);
-                //        }
-                //    }
-                //}
-            }
-            catch (Exception exception)
-            {
-                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
-            }
-        }
     }
 }

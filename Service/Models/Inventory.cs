@@ -44,8 +44,8 @@ namespace Liberatio.Agent.Service.Models
             disks = getDisks();
 
             List<Update> all = new List<Update>();
-            all.AddRange(UpdateManager.Installed);
-            all.AddRange(UpdateManager.Needed);
+            all.AddRange(WindowsUpdater.Installed);
+            all.AddRange(WindowsUpdater.Needed);
             updates = all;
         }
 

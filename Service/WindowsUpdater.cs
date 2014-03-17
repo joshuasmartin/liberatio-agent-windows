@@ -8,7 +8,7 @@ using WUApiLib;
 
 namespace Liberatio.Agent.Service
 {
-    public static class UpdateManager
+    public static class WindowsUpdater
     {
         public static List<Update> Installed = new List<Update>();
         public static List<Update> Needed = new List<Update>();

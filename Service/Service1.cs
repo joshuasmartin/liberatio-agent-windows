@@ -71,7 +71,7 @@ namespace Liberatio.Agent.Service
             try
             {
                 // Perform any setup before using UpdateManager.
-                UpdateManager.Setup();
+                WindowsUpdater.Setup();
 
                 // Check for needed updates every 60 minutes.
                 t.Interval = 60 * 1000;
@@ -132,13 +132,13 @@ namespace Liberatio.Agent.Service
 
         private void TriggerUpdateManger(object source, ElapsedEventArgs e)
         {
-            UpdateManager.GetInstalled();
-            UpdateManager.GetNeeded();
+            WindowsUpdater.GetInstalled();
+            WindowsUpdater.GetNeeded();
         }
 
         private void TriggerUpdateCheck(object source, ElapsedEventArgs e)
         {
-            LiberatioConfiguration.CheckForUpdates();
+            UpdateEngine.Update();
         }
     }
 }
