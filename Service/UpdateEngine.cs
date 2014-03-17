@@ -15,14 +15,17 @@ namespace Liberatio.Agent.Service
     {
         private static string applicationFilePath = System.Reflection.Assembly.GetEntryAssembly().Location;
         private static string applicationDirectory = Path.GetDirectoryName(applicationFilePath);
-        private static string applicationCacheDirectory = string.Format(@"{0}\cache", applicationDirectory);
+        private static string applicationCacheDirectory = Path.Combine(applicationDirectory, "cache");
 
         public static void Update()
         {
             try
             {
+                // Make sure update cache directory exists before continuing.
+                Directory.CreateDirectory(applicationCacheDirectory);
+
                 var client = new RestClient("http://liberatio.herokuapp.com");
-                var request = new RestRequest("au.json", Method.GET);
+                var request = new RestRequest("/au/latest.json", Method.GET);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
@@ -50,6 +53,8 @@ namespace Liberatio.Agent.Service
                     // version, proceed with download and install.
                     if (latestVersion > installedVersion)
                     {
+                        EventLog.WriteEntry("LiberatioAgent", "Liberatio is NOT up-to-date", EventLogEntryType.Information);
+
                         // If the update does not exist or is not valid, download it.
                         if (GetUpdateFilePath(latestVersion, updateSha2sum).Length == 0)
                         {
@@ -65,10 +70,15 @@ namespace Liberatio.Agent.Service
                         // Extract the update file and perform install.
                         PerformInstall(latestVersion, updateSha2sum);
                     }
+                    else
+                    {
+                        EventLog.WriteEntry("LiberatioAgent", "Liberatio is up-to-date", EventLogEntryType.Information);
+                    }
                 }
             }
             catch (Exception exception)
             {
+                EventLog.WriteEntry("LiberatioAgent", "Failed to perform update", EventLogEntryType.Warning);
                 EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
             }
         }
@@ -85,7 +95,7 @@ namespace Liberatio.Agent.Service
 
             try
             {
-                string path = string.Format(@"{0}\{1}", applicationCacheDirectory, Path.GetFileName(uri.LocalPath));
+                string path = Path.Combine(applicationCacheDirectory, Path.GetFileName(uri.LocalPath));
 
                 // Download the file.
                 using (WebClient web = new WebClient())

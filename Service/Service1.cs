@@ -15,7 +15,9 @@ namespace Liberatio.Agent.Service
 {
     public partial class Service1 : ServiceBase
     {
-        Timer t = new Timer();
+        Timer timerInventory = new Timer();
+        Timer timerWindowsUpdates = new Timer();
+        Timer timerUpdateEngine = new Timer();
         ServiceHost host;
         CommandManager commandManager = new CommandManager();
 
@@ -56,10 +58,10 @@ namespace Liberatio.Agent.Service
                 var interval = LiberatioConfiguration.GetValue("inventoryInterval");
                 if ((interval.Length == 0) || (int.Parse(interval) < 30))
                     throw new Exception("Invalid inventoryInterval. Verify that the interval is an integer.");
-                t.Interval = int.Parse(interval) * 1000;
+                timerInventory.Interval = int.Parse(interval) * 1000;
 
-                t.Elapsed += new ElapsedEventHandler(TriggerInventory);
-                t.Enabled = true;
+                timerInventory.Elapsed += new ElapsedEventHandler(TriggerInventory);
+                timerInventory.Enabled = true;
             }
             catch (Exception exception)
             {
@@ -73,11 +75,11 @@ namespace Liberatio.Agent.Service
                 // Perform any setup before using UpdateManager.
                 WindowsUpdater.Setup();
 
-                // Check for needed updates every 60 minutes.
-                t.Interval = 60 * 1000;
+                // Check for needed updates every 60 seconds.
+                timerWindowsUpdates.Interval = 60 * 1000;
 
-                t.Elapsed += new ElapsedEventHandler(TriggerUpdateManger);
-                t.Enabled = true;
+                timerWindowsUpdates.Elapsed += new ElapsedEventHandler(TriggerUpdateManger);
+                timerWindowsUpdates.Enabled = true;
             }
             catch (Exception exception)
             {
@@ -88,11 +90,11 @@ namespace Liberatio.Agent.Service
             // Start the TriggerUpdateCheck timer.
             try
             {
-                // Check for updates every 60 minutes.
-                t.Interval = 60 * 1000;
+                // Check for updates every 60 seconds.
+                timerUpdateEngine.Interval = 60 * 1000;
 
-                t.Elapsed += new ElapsedEventHandler(TriggerUpdateCheck);
-                t.Enabled = true;
+                timerUpdateEngine.Elapsed += new ElapsedEventHandler(TriggerUpdateCheck);
+                timerUpdateEngine.Enabled = true;
             }
             catch (Exception exception)
             {
@@ -116,7 +118,7 @@ namespace Liberatio.Agent.Service
         protected override void OnStop()
         {
             // stop the timer, and close the console service host
-            t.Enabled = false;
+            timerInventory.Enabled = false;
             host.Close();
 
             // Stop listening.
