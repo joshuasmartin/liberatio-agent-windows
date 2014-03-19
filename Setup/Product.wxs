@@ -18,13 +18,14 @@
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes" />
 
-		<Feature Id="ProductFeature" Title="Liberatio Agent" Level="1">
+		<Feature Id="MainApplication" Title="Liberatio Agent" Description="The complete package." Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
 	</Product>
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
+      <!-- Create a folder in the Program Files folder called Liberatio Agent. -->
 			<Directory Id="ProgramFilesFolder">
 				<Directory Id="INSTALLFOLDER" Name="Liberatio Agent" />
 			</Directory>
@@ -46,8 +47,6 @@
         <File Source="$(var.Service.TargetDir)\RestSharp.dll" />
         <File Source="$(var.Service.TargetDir)\WebSocket4Net.dll" />
         <File Source="$(var.Service.TargetDir)\Ionic.Zip.dll" />
-        <File Source="$(var.Service.TargetDir)\Common.Logging.dll" />
-        <File Source="$(var.Service.TargetDir)\Quartz.dll" />
         
         <!-- Installs the Service -->
         <ServiceInstall Id="LiberatioServiceInstall" Type="ownProcess" Name="LiberatioServiceExe"
@@ -75,11 +74,6 @@
         <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run"
                         KeyPath="yes" Name="Liberatio Tray"
                         Value="[INSTALLFOLDER]Tray.exe" Type="string" />
-      </Component>
-      
-      <!-- Only Delete the Liberatio User -->
-      <Component Id="UserComponent" Guid="84A5F5B9-8A33-4182-8FC7-DA70763EA5EC" KeyPath="yes">
-        <util:User Id="User" CreateUser="no" RemoveOnUninstall="yes" Name="liberatio" FailIfExists="no"  UpdateIfExists="yes" />
       </Component>
 		</ComponentGroup>
 	</Fragment>

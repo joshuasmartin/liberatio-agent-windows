@@ -42,11 +42,7 @@ namespace Liberatio.Agent.Service.Models
             memory = getMemory();
             processor = getProcessor();
             disks = getDisks();
-
-            List<Update> all = new List<Update>();
-            all.AddRange(WindowsUpdater.Installed);
-            all.AddRange(WindowsUpdater.Needed);
-            updates = all;
+            updates = getUpdates();
         }
 
         public void Send()
@@ -61,8 +57,9 @@ namespace Liberatio.Agent.Service.Models
                 String json = JsonConvert.SerializeObject(new { inventory = this }, Formatting.Indented);
                 request.AddParameter("application/json", json, ParameterType.RequestBody);
 
-                var location = System.Reflection.Assembly.GetEntryAssembly().Location;
-                System.IO.File.WriteAllText(string.Format(@"{0}\inventory.txt", System.IO.Path.GetDirectoryName(location)), json);
+                var applicationPath = System.Reflection.Assembly.GetEntryAssembly().Location;
+                var inventoryPath = Path.Combine(Path.GetDirectoryName(applicationPath), "inventory.txt");
+                File.WriteAllText(inventoryPath, json);
 
                 // execute the request
                 RestResponse response = (RestResponse)client.Execute(request);
@@ -280,6 +277,14 @@ namespace Liberatio.Agent.Service.Models
             }
 
             return list;
+        }
+
+        private List<Update> getUpdates()
+        {
+            List<Update> all = new List<Update>();
+            all.AddRange(WindowsUpdater.Installed);
+            all.AddRange(WindowsUpdater.Needed);
+            return all;
         }
 
         private void CheckAntivirus()
