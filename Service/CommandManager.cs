@@ -1,13 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PusherClient;
-using SuperSocket.ClientEngine;
+using RestSharp.Contrib;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using WebSocket4Net;
 
 namespace Liberatio.Agent.Service
 {
@@ -15,12 +11,19 @@ namespace Liberatio.Agent.Service
     {
         private Pusher _pusher = null;
         private Channel _cmdChannel = null;
+        private PresenceChannel _presenceChannel = null;
 
         public CommandManager()
         {
+            string _authParams = string.Format("token={0}", LiberatioConfiguration.GetValue("communicationToken"));
+            string _authUrl = "http://liberatio.herokuapp.com/auth/" + HttpUtility.UrlEncode(_authParams);
+
             try
             {
-                _pusher = new Pusher("b64eb9cae3befce08a2f");
+                _pusher = new Pusher("b64eb9cae3befce08a2f", new PusherOptions()
+                {
+                    Authorizer = new HttpAuthorizer(_authUrl)
+                });
                 _pusher.Connected += pusher_Connected;
             }
             catch (Exception exception)
@@ -48,8 +51,17 @@ namespace Liberatio.Agent.Service
         {
             string uuid = LiberatioConfiguration.GetValue("uuid");
 
-            _cmdChannel = _pusher.Subscribe(string.Format("cmd_{0}", uuid));
+            // Setup private commands channel.
+            _cmdChannel = _pusher.Subscribe(string.Format("private-cmd_{0}", uuid));
             _cmdChannel.Subscribed += _cmdChannel_Subscribed;
+
+            // Setup presence channel.
+            _presenceChannel = (PresenceChannel)_pusher.Subscribe(string.Format("presence-cmd_{0}", uuid));
+            _presenceChannel.Subscribed += _presenceChannel_Subscribed;
+        }
+
+        void _presenceChannel_Subscribed(object sender)
+        {
         }
 
         private void _cmdChannel_Subscribed(object sender)

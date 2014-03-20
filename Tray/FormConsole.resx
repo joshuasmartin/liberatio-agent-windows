@@ -120,4 +120,29 @@
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAEAEBAAAAAAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAA
+        AAAzMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/NDMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/TU1N/5GRkf+Dg4P/PTg0/4ZcQP+RYkL/kWJC/3lW
+        Pv85NjP/f1k//5tnRP9sTzz/NjQz/zMzM/8zMzP/NjY2/5+fn/+zs7P/bm5u/zo2NP91VD7/z4FN/6lt
+        Rv9qTjz/g1tA/8F6Sv+DW0D/14VO/1tHOf8zMzP/MzMz/zo6Ov+3t7f/cnJy/zMzM/8zMzP/NTQz/7Rz
+        SP93VT7/NDMz/6ZsRv+NYEL/OTY0/754Sv95Vj7/MzMz/zMzM/86Ojr/t7e3/25ubv8zMzP/PTg0/41g
+        Qv/Zhk7/d1U+/zMzM/9zUz3/y39M/6BpRf/YhU7/U0I4/zMzM/8zMzP/QUFB/7+/v/9ubm7/MzMz/zk2
+        NP9vUTz/i19B/1VEOP8zMzP/NzUz/2ZMO/+AWT//WEU5/zU0M/8zMzP/MzMz/19fX//MzMz/YmJi/zMz
+        M/8zMzP/OTY0/6FqRf9xUj3/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/82Njb/PDw8/zU1
+        Nf8zMzP/MzMz/zMzM/85NjT/NjQz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMzM/8zMzP/MzMz/zMz
+        M/8zMzP/AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA
+        //8AAP//AAD//w==
+</value>
+  </data>
 </root>

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.ServiceModel;
 using System.ServiceProcess;
 using System.Text;
@@ -15,6 +17,9 @@ using System.Xml.XPath;
 
 namespace Liberatio.Agent.Tray
 {
+    public delegate void LoadConfigurationDelegate(int value);
+    public delegate void PopulateConfigurationDelegate(string uuid, string location, string role, string status);
+
     [ServiceContract]
     public interface IConsoleService
     {
@@ -37,21 +42,66 @@ namespace Liberatio.Agent.Tray
 
         private void FormConsole_Load(object sender, EventArgs e)
         {
-            // wcf client to the service
-            IConsoleService pipeProxy = OpenChannelToService();
+            // Set the version number label text.
+            string applicationFilePath = System.Reflection.Assembly.GetEntryAssembly().Location;
+            Version version = new Version(FileVersionInfo.GetVersionInfo(applicationFilePath).ProductVersion);
+            lblVersionNumber.Text = version.ToString();
 
-            // load values from the wcf service
-            txtUuid.Text = pipeProxy.GetValueFromConfiguration("uuid");
-            txtLocation.Text = pipeProxy.GetValueFromConfiguration("location");
-            cmbRole.Text = pipeProxy.GetValueFromConfiguration("role");
+            // Load configuration on another thread.
+            pictureWaiting.Visible = true;
+            LoadConfigurationDelegate d = loadConfiguration;
+            d.BeginInvoke(15, null, null);
+        }
 
-            ReportIsRegistered();
+        void loadConfiguration(int value)
+        {
+            try
+            {
+                // wcf client to the service
+                IConsoleService pipeProxy = OpenChannelToService();
+
+                // load values from the wcf service
+                string uuid = pipeProxy.GetValueFromConfiguration("uuid");
+                string location = pipeProxy.GetValueFromConfiguration("location");
+                string role = pipeProxy.GetValueFromConfiguration("role");
+
+                // determine if the uuid is registered
+                string status = "";
+                if (pipeProxy.IsRegistered())
+                    status = "Registered";
+
+                this.Invoke(new PopulateConfigurationDelegate(populateConfiguration), new object[] { uuid, location, role, status });
+            }
+            catch
+            {
+
+            }
+        }
+
+        void populateConfiguration(string uuid, string location, string role, string status)
+        {
+            txtUuid.Text = uuid;
+            txtLocation.Text = location;
+            cmbRole.Text = role;
+
+            if (status.Equals("Registered"))
+            {
+                lblConnectionStatusValue.Text = "Registered";
+                pnlStatus.BackColor = Color.Green;
+                btnConnect.Visible = false;
+            }
+            else
+            {
+                lblConnectionStatusValue.Text = "Not Registered";
+                pnlStatus.BackColor = Color.Firebrick;
+            }
+
+            pictureWaiting.Visible = false;
         }
 
         private void btnSaveAndRestart_Click(object sender, EventArgs e)
         {
             btnSaveAndRestart.Enabled = false;
-            progressBar.Visible = true;
 
             // wcf client to the service
             IConsoleService pipeProxy = OpenChannelToService();
@@ -64,7 +114,6 @@ namespace Liberatio.Agent.Tray
             // restart the service to refresh the configuration
             RestartService();
 
-            progressBar.Visible = false;
             btnSaveAndRestart.Enabled = true;
 
             MessageBox.Show("Settings have been saved, and the service has been restarted.", "Success",
@@ -91,25 +140,6 @@ namespace Liberatio.Agent.Tray
             catch (InvalidOperationException)
             {
 
-            }
-        }
-
-        private void ReportIsRegistered()
-        {
-            // wcf client to the service
-            IConsoleService pipeProxy = OpenChannelToService();
-
-            // determine if the uuid is registered
-            if (pipeProxy.IsRegistered())
-            {
-                lblConnectionStatusValue.Text = "Registered";
-                lblConnectionStatusValue.ForeColor = Color.Green;
-                btnConnect.Visible = false;
-            }
-            else
-            {
-                lblConnectionStatusValue.Text = "Unregistered";
-                lblConnectionStatusValue.ForeColor = Color.Red;
             }
         }
 

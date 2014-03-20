@@ -50,7 +50,10 @@ namespace Liberatio.Agent.Tray
 
         private static void notify_MouseClick(object sender, MouseEventArgs e)
         {
-            new FormConsole().Show();
+            if (e.Button == MouseButtons.Left)
+            {
+                new FormConsole().Show();
+            }
         }
 
         private static void itemClose_Click(object Sender, EventArgs e)
