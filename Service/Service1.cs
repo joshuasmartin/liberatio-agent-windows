@@ -1,14 +1,8 @@
 ﻿using Liberatio.Agent.Service.Models;
-using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.DirectoryServices.AccountManagement;
-using System.IO;
-using System.Security.Cryptography;
 using System.ServiceModel;
 using System.ServiceProcess;
-using System.Text;
 using System.Timers;
 
 namespace Liberatio.Agent.Service

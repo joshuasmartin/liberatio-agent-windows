@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.DirectoryServices.AccountManagement;
 using System.IO;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -15,6 +16,9 @@ namespace Liberatio.Agent.Service
 {
     public static class LiberatioConfiguration
     {
+        [DllImport("wininet.dll")]
+        private extern static bool InternetGetConnectedState(out int Description, int ReservedValue);
+
         /// <summary>
         /// Verifies that the configuration file contains a UUID,
         /// and creates one if there isn't one present.
@@ -34,6 +38,16 @@ namespace Liberatio.Agent.Service
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
             }
+        }
+
+        /// <summary>
+        /// Uses the Windows API to get the Internet connection state.
+        /// </summary>
+        /// <returns>Returns whether or not the computer is connected</returns>
+        public static bool IsConnectedToInternet()
+        {
+            int Desc;
+            return InternetGetConnectedState(out Desc, 0);
         }
 
         /// <summary>

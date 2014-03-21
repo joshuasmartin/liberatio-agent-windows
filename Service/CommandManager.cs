@@ -15,11 +15,12 @@ namespace Liberatio.Agent.Service
 
         public CommandManager()
         {
-            string _authParams = string.Format("token={0}", LiberatioConfiguration.GetValue("communicationToken"));
-            string _authUrl = "http://liberatio.herokuapp.com/auth/" + HttpUtility.UrlEncode(_authParams);
-
             try
             {
+                string _authParams = string.Format("token={0}", LiberatioConfiguration.GetValue("communicationToken"));
+                string _authUrl = "http://liberatio.herokuapp.com/pusher/auth?token=" + LiberatioConfiguration.GetValue("communicationToken"); //HttpUtility.UrlEncode(_authParams);
+
+                EventLog.WriteEntry("LiberatioAgent", "Attempting to connect", EventLogEntryType.Information);
                 _pusher = new Pusher("b64eb9cae3befce08a2f", new PusherOptions()
                 {
                     Authorizer = new HttpAuthorizer(_authUrl)
@@ -51,21 +52,42 @@ namespace Liberatio.Agent.Service
         {
             string uuid = LiberatioConfiguration.GetValue("uuid");
 
-            // Setup private commands channel.
-            _cmdChannel = _pusher.Subscribe(string.Format("private-cmd_{0}", uuid));
-            _cmdChannel.Subscribed += _cmdChannel_Subscribed;
+            try
+            {
+                // Setup private commands channel.
+                EventLog.WriteEntry("LiberatioAgent", "Attempting to subscribe to private channel", EventLogEntryType.Information);
+                _cmdChannel = _pusher.Subscribe(string.Format("private-cmd_{0}", uuid));
+                _cmdChannel.Subscribed += _cmdChannel_Subscribed;
 
-            // Setup presence channel.
-            _presenceChannel = (PresenceChannel)_pusher.Subscribe(string.Format("presence-cmd_{0}", uuid));
-            _presenceChannel.Subscribed += _presenceChannel_Subscribed;
+                // Setup presence channel.
+                EventLog.WriteEntry("LiberatioAgent", "Attempting to subscribe to presence channel", EventLogEntryType.Information);
+                _presenceChannel = (PresenceChannel)_pusher.Subscribe(string.Format("presence-cmd_{0}", uuid));
+                _presenceChannel.Subscribed += _presenceChannel_Subscribed;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", "Failed to subscribe", EventLogEntryType.Error);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
         }
 
+        /// <summary>
+        /// Called by the presence channel when the channel connection is made.
+        /// </summary>
+        /// <param name="sender"></param>
         void _presenceChannel_Subscribed(object sender)
         {
+            EventLog.WriteEntry("LiberatioAgent", "Subscribed to presence channel", EventLogEntryType.Information);
         }
 
+        /// <summary>
+        /// Called by the private channel when the channel connection is made.
+        /// </summary>
+        /// <param name="sender"></param>
         private void _cmdChannel_Subscribed(object sender)
         {
+            EventLog.WriteEntry("LiberatioAgent", "Subscribed to private channel", EventLogEntryType.Information);
+
             _cmdChannel.Bind("commands.run", (dynamic data) =>
             {
                 EventLog.WriteEntry("LiberatioAgent", "Data is " + data, EventLogEntryType.Information);

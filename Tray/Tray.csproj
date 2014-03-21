@@ -92,14 +92,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="logo.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <None Include="Resources\cancel.zip" />
     <None Include="Resources\waiting.gif" />
     <None Include="Resources\cancel-48.png" />
     <None Include="Resources\ok-48.png" />
     <None Include="Resources\banner-logo.png" />
+    <Content Include="logo.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="waiting.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
