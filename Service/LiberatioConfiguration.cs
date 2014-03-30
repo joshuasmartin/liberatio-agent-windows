@@ -51,6 +51,18 @@ namespace Liberatio.Agent.Service
         }
 
         /// <summary>
+        /// Checks the configuration file to determine if
+        /// the remote commands feature should be enabled.
+        /// </summary>
+        /// <returns>Returns whether or not to use
+        /// the remote commands feature.</returns>
+        public static bool UseRemoteCommands()
+        {
+            var value = GetValue("useRemoteCommands");
+            return bool.Parse(value);
+        }
+
+        /// <summary>
         /// Uses WMI to determine the operating system type. It will be a
         /// Server, Workstation, or Domain Controller. The result is
         /// saved to the configuration file in the role attribute.

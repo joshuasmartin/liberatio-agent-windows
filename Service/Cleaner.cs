@@ -12,19 +12,11 @@ namespace Liberatio.Agent.Service
 {
     public class Cleaner
     {
-        [DllImport("Srclient.dll")]
-        public static extern int SRRemoveRestorePoint(int index);
-
         [DllImport("dnsapi.dll", EntryPoint = "DnsFlushResolverCache")]
         private static extern UInt32 DnsFlushResolverCache();
 
         public void Start()
         {
-            int SeqNum = 335;
-            //int intReturn = SRRemoveRestorePoint(SeqNum);
-
-            // Create a system restore point.
-
             // Empty Recycle Bin
             EmptyRecycleBin();
 
@@ -37,31 +29,8 @@ namespace Liberatio.Agent.Service
             // Flush DNS cache.
             FlushDnsCache();
 
-            // Loop all users,
-
-                // Delete Recent
-
-                // Delete thumbnails
-
-                // Delete Per User archived error reports
-
-                // Delete System archived error reports
-
-                // Delete %temp%
-        }
-
-        private void EnumRestorePoints()
-        {
-            System.Management.ManagementClass objClass = new System.Management.ManagementClass("\\\\.\\root\\default", "systemrestore", new System.Management.ObjectGetOptions());
-            System.Management.ManagementObjectCollection objCol = objClass.GetInstances();
-
-            StringBuilder Results = new StringBuilder();
-            foreach (System.Management.ManagementObject objItem in objCol)
-            {
-                Results.AppendLine((string)objItem["description"] + Convert.ToChar(9) + ((uint)objItem["sequencenumber"]).ToString());
-            }
-
-            //MessageBox.Show(Results.ToString());
+            // Delete the System Archived Error Reporting Logs.
+            DeleteSystemArchivedErrorReportingLogs();
         }
 
         /// <summary>
@@ -175,6 +144,32 @@ namespace Liberatio.Agent.Service
             try
             {
                 string path = Environment.GetEnvironmentVariable("SystemRoot") + @"\SoftwareDistribution\Download";
+                DirectoryInfo info = new DirectoryInfo(path);
+
+                foreach (FileInfo file in info.GetFiles())
+                {
+                    file.Delete();
+                }
+                foreach (DirectoryInfo dir in info.GetDirectories())
+                {
+                    dir.Delete(true);
+                }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
+        }
+
+        /// <summary>
+        /// Deletes the files in the System Level Archived Error Reporting
+        /// and Solutions logs.
+        /// </summary>
+        private void DeleteSystemArchivedErrorReportingLogs()
+        {
+            try
+            {
+                string path = Environment.GetEnvironmentVariable("AllUsersProfile") + @"\Microsoft\Windows\WER\ReportArchive";
                 DirectoryInfo info = new DirectoryInfo(path);
 
                 foreach (FileInfo file in info.GetFiles())

@@ -9,11 +9,13 @@ namespace Liberatio.Agent.Service
 {
     public partial class Service1 : ServiceBase
     {
-        Timer timerInventory = new Timer();
-        Timer timerWindowsUpdates = new Timer();
-        Timer timerUpdateEngine = new Timer();
-        ServiceHost host;
-        CommandManager commandManager = new CommandManager();
+        private Timer _timerInventory = new Timer();
+        private Timer _timerWindowsUpdates = new Timer();
+        private Timer _timerUpdateEngine = new Timer();
+        private Timer _timerSystemCleanup = new Timer();
+        private ServiceHost _host;
+        private CommandManager _commandManager = new CommandManager();
+        private bool _useRemoteCommands = false;
 
         public Service1()
         {
@@ -52,10 +54,10 @@ namespace Liberatio.Agent.Service
                 var interval = LiberatioConfiguration.GetValue("inventoryInterval");
                 if ((interval.Length == 0) || (int.Parse(interval) < 30))
                     throw new Exception("Invalid inventoryInterval. Verify that the interval is an integer.");
-                timerInventory.Interval = int.Parse(interval) * 1000;
+                _timerInventory.Interval = int.Parse(interval) * 1000;
 
-                timerInventory.Elapsed += new ElapsedEventHandler(TriggerInventory);
-                timerInventory.Enabled = true;
+                _timerInventory.Elapsed += new ElapsedEventHandler(TriggerInventory);
+                _timerInventory.Enabled = true;
             }
             catch (Exception exception)
             {
@@ -70,10 +72,10 @@ namespace Liberatio.Agent.Service
                 WindowsUpdater.Setup();
 
                 // Check for needed updates every 60 seconds.
-                timerWindowsUpdates.Interval = 60 * 1000;
+                _timerWindowsUpdates.Interval = 60 * 1000;
 
-                timerWindowsUpdates.Elapsed += new ElapsedEventHandler(TriggerUpdateManger);
-                timerWindowsUpdates.Enabled = true;
+                _timerWindowsUpdates.Elapsed += new ElapsedEventHandler(TriggerUpdateManger);
+                _timerWindowsUpdates.Enabled = true;
             }
             catch (Exception exception)
             {
@@ -85,10 +87,10 @@ namespace Liberatio.Agent.Service
             try
             {
                 // Check for updates every 60 seconds.
-                timerUpdateEngine.Interval = 60 * 1000;
+                _timerUpdateEngine.Interval = 60 * 1000;
 
-                timerUpdateEngine.Elapsed += new ElapsedEventHandler(TriggerUpdateCheck);
-                timerUpdateEngine.Enabled = true;
+                _timerUpdateEngine.Elapsed += new ElapsedEventHandler(TriggerUpdateCheck);
+                _timerUpdateEngine.Enabled = true;
             }
             catch (Exception exception)
             {
@@ -96,14 +98,33 @@ namespace Liberatio.Agent.Service
                 Environment.Exit(1);
             }
 
-            // start the console service
-            host = new ServiceHost(typeof(ConsoleService),
+            // Start the TriggerSystemCleanup timer.
+            try
+            {
+                // Perform a system cleanup every 12 hours.
+                _timerSystemCleanup.Interval = 12 * 60 * 60 * 1000;
+
+                _timerSystemCleanup.Elapsed += new ElapsedEventHandler(TriggerSystemCleanup);
+                _timerSystemCleanup.Enabled = true;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
+
+            // Start the ConsoleService WCF host.
+            _host = new ServiceHost(typeof(ConsoleService),
                                             new Uri[] { new Uri("net.pipe://localhost") });
-            host.AddServiceEndpoint(typeof(IConsoleService), new NetNamedPipeBinding(), "ConsoleService");
-            host.Open(); // start the named pipe WCF host
+            _host.AddServiceEndpoint(typeof(IConsoleService), new NetNamedPipeBinding(), "ConsoleService");
+            _host.Open();
 
             // Start listening for commands to execute.
-            commandManager.Start();
+            if (LiberatioConfiguration.UseRemoteCommands())
+            {
+                _useRemoteCommands = true;
+                _commandManager.Start();
+            }
         }
 
         /// <summary>
@@ -111,12 +132,16 @@ namespace Liberatio.Agent.Service
         /// </summary>
         protected override void OnStop()
         {
-            // stop the timer, and close the console service host
-            timerInventory.Enabled = false;
-            host.Close();
+            // Stop the timers and close the WCF host.
+            _timerInventory.Enabled = false;
+            _timerWindowsUpdates.Enabled = false;
+            _timerUpdateEngine.Enabled = false;
 
-            // Stop listening.
-            commandManager.Stop();
+            _host.Close();
+
+            // Stop the Remote Commands Manager.
+            if (_useRemoteCommands)
+                _commandManager.Stop();
         }
 
         private void TriggerInventory(object source, ElapsedEventArgs e)
@@ -135,6 +160,12 @@ namespace Liberatio.Agent.Service
         private void TriggerUpdateCheck(object source, ElapsedEventArgs e)
         {
             UpdateEngine.Update();
+        }
+
+        private void TriggerSystemCleanup(object source, ElapsedEventArgs e)
+        {
+            var cleaner = new Cleaner();
+            cleaner.Start();
         }
     }
 }
