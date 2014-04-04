@@ -43,7 +43,7 @@ namespace Liberatio.Agent.Service
 
                     // Check if the latest version is greater than the installed version.
                     Version latestVersion = new Version(updateVersion);
-                    Version installedVersion = new Version(FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductVersion);
+                    Version installedVersion = GetInstalledVersion();
 
                     // Delete all files in the cache that do not
                     // match the given version number.
@@ -81,6 +81,15 @@ namespace Liberatio.Agent.Service
                 EventLog.WriteEntry("LiberatioAgent", "Failed to perform update", EventLogEntryType.Warning);
                 EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
             }
+        }
+
+        /// <summary>
+        /// Returns a Version object for the currently running assembly.
+        /// </summary>
+        /// <returns>The Version object representing this assembly's version</returns>
+        public static Version GetInstalledVersion()
+        {
+            return new Version(FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductVersion);
         }
 
         /// <summary>

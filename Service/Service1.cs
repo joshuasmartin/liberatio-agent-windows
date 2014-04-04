@@ -15,7 +15,6 @@ namespace Liberatio.Agent.Service
         private Timer _timerSystemCleanup = new Timer();
         private ServiceHost _host;
         private CommandManager _commandManager = new CommandManager();
-        private bool _useRemoteCommands = false;
 
         public Service1()
         {
@@ -51,7 +50,7 @@ namespace Liberatio.Agent.Service
             try
             {
                 // Perform inventory according to the interval specified.
-                var interval = LiberatioConfiguration.GetValue("inventoryInterval");
+                var interval = LiberatioConfiguration.GetValue("inventoryIntervalInSeconds");
                 if ((interval.Length == 0) || (int.Parse(interval) < 30))
                     throw new Exception("Invalid inventoryInterval. Verify that the interval is an integer.");
                 _timerInventory.Interval = int.Parse(interval) * 1000;
@@ -120,11 +119,7 @@ namespace Liberatio.Agent.Service
             _host.Open();
 
             // Start listening for commands to execute.
-            if (LiberatioConfiguration.UseRemoteCommands())
-            {
-                _useRemoteCommands = true;
-                _commandManager.Start();
-            }
+            _commandManager.Start();
         }
 
         /// <summary>
@@ -140,8 +135,7 @@ namespace Liberatio.Agent.Service
             _host.Close();
 
             // Stop the Remote Commands Manager.
-            if (_useRemoteCommands)
-                _commandManager.Stop();
+            _commandManager.Stop();
         }
 
         private void TriggerInventory(object source, ElapsedEventArgs e)

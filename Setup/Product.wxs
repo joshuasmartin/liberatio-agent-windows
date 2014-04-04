@@ -88,14 +88,21 @@
         <File Id="TrayIconFile" Source="$(var.Tray.TargetDir)/logo.ico" />
       </Component>
 
-      <!-- registry run key -->
+      <!-- Registry run key for starting the Tray at logon. -->
       <Component Id="LiberatioTrayRegistryRun" Guid="4969E1BF-F9CE-4D86-AEAF-BE1590266D6F">
         <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run"
                         KeyPath="yes" Name="Liberatio Tray"
                         Value="[INSTALLFOLDER]Tray.exe" Type="string" />
       </Component>
 
-      <!-- Start Menu shortcut is a part of this component -->
+      <!-- Registry special accounts key for hiding the user on the Logon screen. -->
+      <Component Id="SpecialAccountsRegistryKey" Guid="CD2A0FF3-A565-4757-ADEC-5FA78331AF61">
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows NT\CurrentVersion\WinLogon\SpecialAccounts"
+                        KeyPath="yes" Name="liberatio"
+                        Value="0" Type="integer" />
+      </Component>
+
+      <!-- Start Menu shortcut is a part of this component. -->
       <ComponentRef Id="ApplicationShortcut" />
     </ComponentGroup>
 	</Fragment>

@@ -54,12 +54,15 @@ namespace Liberatio.Agent.Service
 
             try
             {
-                // Setup private commands channel.
-                EventLog.WriteEntry("LiberatioAgent", "Attempting to subscribe to private channel", EventLogEntryType.Information);
-                _cmdChannel = _pusher.Subscribe(string.Format("private-cmd_{0}", uuid));
-                _cmdChannel.Subscribed += _cmdChannel_Subscribed;
+                // Setup private commands channel if we are told to do so.
+                if (LiberatioConfiguration.UseRemoteCommands())
+                {
+                    EventLog.WriteEntry("LiberatioAgent", "Attempting to subscribe to private channel", EventLogEntryType.Information);
+                    _cmdChannel = _pusher.Subscribe(string.Format("private-cmd_{0}", uuid));
+                    _cmdChannel.Subscribed += _cmdChannel_Subscribed;
+                }
 
-                // Setup presence channel.
+                // Setup presence channel always.
                 EventLog.WriteEntry("LiberatioAgent", "Attempting to subscribe to presence channel", EventLogEntryType.Information);
                 _presenceChannel = (PresenceChannel)_pusher.Subscribe(string.Format("presence-cmd_{0}", uuid));
                 _presenceChannel.Subscribed += _presenceChannel_Subscribed;
@@ -98,18 +101,22 @@ namespace Liberatio.Agent.Service
                 {
                     string s = c.ToString();
                     EventLog.WriteEntry("LiberatioAgent", "command is " + s, EventLogEntryType.Information);
-                    string path = Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe");
 
-                    ProcessStartInfo i = null;
-                    Process p = null;
+                    ProcessStartInfo i;
+                    Process p;
+                    string builtinShutdownPath = Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe");
 
                     switch (s)
                     {
+                        // Builtin - reboot the computer.
                         case "reboot":
-                            i = new ProcessStartInfo(path, "/r /c \"Liberatio has initiated a *reboot* of your computer - you have 1 minute.\" /t 60");
+                            i = new ProcessStartInfo(builtinShutdownPath, "/r /c \"Liberatio has initiated a *reboot* of your computer - you have 1 minute.\" /t 60");
                             i.UseShellExecute = false;
                             i.RedirectStandardOutput = true;
                             i.RedirectStandardError = true;
+                            i.UserName = "liberatio";
+                            i.Password = LiberatioConfiguration.GetLiberatioUserPassword();
+
                             p = new Process();
                             p.StartInfo = i;
                             p.OutputDataReceived += CaptureOutput;
@@ -119,11 +126,16 @@ namespace Liberatio.Agent.Service
                             p.BeginErrorReadLine();
                             p.WaitForExit();
                             break;
+
+                        // Builtin - shutdown the computer.
                         case "shutdown":
-                            i = new ProcessStartInfo(path, "/s /c \"Liberatio has initiated a *shutdown* of your computer - you have 1 minute.\" /t 60");
+                            i = new ProcessStartInfo(builtinShutdownPath, "/s /c \"Liberatio has initiated a *shutdown* of your computer - you have 1 minute.\" /t 60");
                             i.UseShellExecute = false;
                             i.RedirectStandardOutput = true;
                             i.RedirectStandardError = true;
+                            i.UserName = "liberatio";
+                            i.Password = LiberatioConfiguration.GetLiberatioUserPassword();
+
                             p = new Process();
                             p.StartInfo = i;
                             p.OutputDataReceived += CaptureOutput;

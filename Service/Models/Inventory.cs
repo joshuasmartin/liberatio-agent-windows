@@ -15,6 +15,7 @@ namespace Liberatio.Agent.Service.Models
     public class Inventory
     {
         public string uuid { get; set; }
+        public string agent_version { get; set; }
         public string token { get; set; }
         public string name { get; set; }
         public string operating_system { get; set; }
@@ -31,6 +32,7 @@ namespace Liberatio.Agent.Service.Models
         public Inventory()
         {
             uuid = ConfigurationManager.AppSettings["uuid"].Trim(); // from config
+            agent_version = UpdateEngine.GetInstalledVersion().ToString();
             token = ConfigurationManager.AppSettings["communicationToken"].Trim(); // from config
             name = System.Environment.MachineName;
             operating_system = getOperatingSystem();
