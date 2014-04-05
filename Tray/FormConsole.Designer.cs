@@ -31,10 +31,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormConsole));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblConnectionStatusValue = new System.Windows.Forms.Label();
+            this.lblConnectionStatus = new System.Windows.Forms.Label();
             this.btnConnect = new System.Windows.Forms.Button();
             this.pnlHeader = new System.Windows.Forms.Panel();
-            this.pnlStatus = new System.Windows.Forms.Panel();
             this.lblVersionNumber = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lblRole = new System.Windows.Forms.Label();
@@ -46,11 +45,13 @@
             this.txtUuid = new System.Windows.Forms.TextBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureWaiting = new System.Windows.Forms.PictureBox();
+            this.pictureStatus = new System.Windows.Forms.PictureBox();
             this.statusStrip1.SuspendLayout();
             this.pnlHeader.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureWaiting)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureStatus)).BeginInit();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -69,16 +70,16 @@
             this.lblStatus.Size = new System.Drawing.Size(50, 17);
             this.lblStatus.Text = "Loading";
             // 
-            // lblConnectionStatusValue
+            // lblConnectionStatus
             // 
-            this.lblConnectionStatusValue.AutoSize = true;
-            this.lblConnectionStatusValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblConnectionStatusValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.lblConnectionStatusValue.Location = new System.Drawing.Point(285, 129);
-            this.lblConnectionStatusValue.Name = "lblConnectionStatusValue";
-            this.lblConnectionStatusValue.Size = new System.Drawing.Size(155, 25);
-            this.lblConnectionStatusValue.TabIndex = 13;
-            this.lblConnectionStatusValue.Text = "Not Registered";
+            this.lblConnectionStatus.AutoSize = true;
+            this.lblConnectionStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblConnectionStatus.ForeColor = System.Drawing.Color.Firebrick;
+            this.lblConnectionStatus.Location = new System.Drawing.Point(285, 129);
+            this.lblConnectionStatus.Name = "lblConnectionStatus";
+            this.lblConnectionStatus.Size = new System.Drawing.Size(155, 25);
+            this.lblConnectionStatus.TabIndex = 13;
+            this.lblConnectionStatus.Text = "Not Registered";
             // 
             // btnConnect
             // 
@@ -100,20 +101,11 @@
             this.pnlHeader.Size = new System.Drawing.Size(624, 86);
             this.pnlHeader.TabIndex = 17;
             // 
-            // pnlStatus
-            // 
-            this.pnlStatus.BackColor = System.Drawing.Color.Firebrick;
-            this.pnlStatus.ForeColor = System.Drawing.Color.Firebrick;
-            this.pnlStatus.Location = new System.Drawing.Point(221, 113);
-            this.pnlStatus.Name = "pnlStatus";
-            this.pnlStatus.Size = new System.Drawing.Size(58, 58);
-            this.pnlStatus.TabIndex = 18;
-            // 
             // lblVersionNumber
             // 
             this.lblVersionNumber.AutoSize = true;
             this.lblVersionNumber.ForeColor = System.Drawing.Color.White;
-            this.lblVersionNumber.Location = new System.Drawing.Point(534, 64);
+            this.lblVersionNumber.Location = new System.Drawing.Point(534, 63);
             this.lblVersionNumber.Name = "lblVersionNumber";
             this.lblVersionNumber.Size = new System.Drawing.Size(78, 13);
             this.lblVersionNumber.TabIndex = 0;
@@ -218,17 +210,26 @@
             this.pictureWaiting.TabIndex = 16;
             this.pictureWaiting.TabStop = false;
             // 
+            // pictureStatus
+            // 
+            this.pictureStatus.Image = global::Liberatio.Agent.Tray.Properties.Resources.disconnected;
+            this.pictureStatus.Location = new System.Drawing.Point(231, 119);
+            this.pictureStatus.Name = "pictureStatus";
+            this.pictureStatus.Size = new System.Drawing.Size(48, 48);
+            this.pictureStatus.TabIndex = 20;
+            this.pictureStatus.TabStop = false;
+            // 
             // FormConsole
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(624, 442);
+            this.Controls.Add(this.pictureStatus);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.pnlStatus);
             this.Controls.Add(this.pnlHeader);
             this.Controls.Add(this.pictureWaiting);
             this.Controls.Add(this.btnConnect);
-            this.Controls.Add(this.lblConnectionStatusValue);
+            this.Controls.Add(this.lblConnectionStatus);
             this.Controls.Add(this.statusStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -247,6 +248,7 @@
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureWaiting)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureStatus)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -256,11 +258,10 @@
 
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel lblStatus;
-        private System.Windows.Forms.Label lblConnectionStatusValue;
+        private System.Windows.Forms.Label lblConnectionStatus;
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.PictureBox pictureWaiting;
         private System.Windows.Forms.Panel pnlHeader;
-        private System.Windows.Forms.Panel pnlStatus;
         private System.Windows.Forms.Label lblVersionNumber;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label lblRole;
@@ -271,6 +272,7 @@
         private System.Windows.Forms.Label lblUuid;
         private System.Windows.Forms.TextBox txtUuid;
         private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.PictureBox pictureStatus;
 
     }
 }

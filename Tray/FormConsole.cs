@@ -118,14 +118,16 @@ namespace Liberatio.Agent.Tray
 
             if (status.Equals("Registered"))
             {
-                lblConnectionStatusValue.Text = "Registered";
-                pnlStatus.BackColor = Color.Green;
+                lblConnectionStatus.Text = "Registered";
+                lblConnectionStatus.ForeColor = Color.Green;
+                pictureStatus.Image = Properties.Resources.connected;
                 btnConnect.Visible = false;
             }
             else
             {
-                lblConnectionStatusValue.Text = "Not Registered";
-                pnlStatus.BackColor = Color.Firebrick;
+                lblConnectionStatus.Text = "Not Registered";
+                lblConnectionStatus.ForeColor = Color.Firebrick;
+                pictureStatus.Image = Properties.Resources.disconnected;
             }
 
             pictureWaiting.Visible = false;

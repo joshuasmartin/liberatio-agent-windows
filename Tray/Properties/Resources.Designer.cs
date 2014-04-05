@@ -73,9 +73,9 @@ namespace Liberatio.Agent.Tray.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap cancel_48 {
+        internal static System.Drawing.Bitmap connected {
             get {
-                object obj = ResourceManager.GetObject("cancel_48", resourceCulture);
+                object obj = ResourceManager.GetObject("connected", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -83,9 +83,9 @@ namespace Liberatio.Agent.Tray.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap ok_48 {
+        internal static System.Drawing.Bitmap disconnected {
             get {
-                object obj = ResourceManager.GetObject("ok_48", resourceCulture);
+                object obj = ResourceManager.GetObject("disconnected", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
