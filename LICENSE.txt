@@ -1,0 +1,6 @@
+Third Party Licenses
+
+RestSharp - Apache License 2.0
+Dot Net Zip - Microsoft Public License
+
+NativeMethods.cs - Microsoft Public License

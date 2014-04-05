@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
 using System.ServiceModel;
 using System.ServiceProcess;
 using System.Text;
@@ -17,7 +18,7 @@ using System.Xml.XPath;
 
 namespace Liberatio.Agent.Tray
 {
-    public delegate void LoadConfigurationDelegate(int value);
+    public delegate void LoadConfigurationDelegate();
     public delegate void PopulateConfigurationDelegate(string uuid, string location, string role, string status);
 
     [ServiceContract]
@@ -37,6 +38,10 @@ namespace Liberatio.Agent.Tray
     {
         public FormConsole()
         {
+            //WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            //WindowsPrincipal principal = new WindowsPrincipal(identity);
+
+            //if (principal.IsInRole(WindowsBuiltInRole.Administrator))
             InitializeComponent();
         }
 
@@ -50,31 +55,58 @@ namespace Liberatio.Agent.Tray
             // Load configuration on another thread.
             pictureWaiting.Visible = true;
             LoadConfigurationDelegate d = loadConfiguration;
-            d.BeginInvoke(15, null, null);
+            d.BeginInvoke(null, null);
         }
 
-        void loadConfiguration(int value)
+        void loadConfiguration()
         {
             try
             {
-                // wcf client to the service
+                // Connect to the running service using WCF.
                 IConsoleService pipeProxy = OpenChannelToService();
 
-                // load values from the wcf service
+                // Load configuration values via the endpoint.
                 string uuid = pipeProxy.GetValueFromConfiguration("uuid");
                 string location = pipeProxy.GetValueFromConfiguration("location");
                 string role = pipeProxy.GetValueFromConfiguration("role");
 
-                // determine if the uuid is registered
                 string status = "";
                 if (pipeProxy.IsRegistered())
                     status = "Registered";
 
+                // Populate the user interface with the collected values.
                 this.Invoke(new PopulateConfigurationDelegate(populateConfiguration), new object[] { uuid, location, role, status });
             }
-            catch
+            catch (EndpointNotFoundException exception)
             {
+                var sc = new ServiceController("Liberatio Agent");
+                var caption = "";
+                var text = "";
 
+                if (sc.Status == ServiceControllerStatus.Stopped)
+                {
+                    text = "Please start the service in the Control Panel or restart the computer.";
+                    caption = "Liberatio Service is Not Running";
+                }
+                else
+                {
+                    EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Warning);
+
+                    text = exception.Message;
+                    caption = "Could Not Connect to the Liberatio Service";
+                }
+
+                // Do not allow the user to continue without the service.
+                if (MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning) == DialogResult.OK)
+                {
+                    this.Close();
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, "Could Not Load Configuration",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
             }
         }
 
@@ -97,6 +129,7 @@ namespace Liberatio.Agent.Tray
             }
 
             pictureWaiting.Visible = false;
+            lblStatus.Text = "Done";
         }
 
         private void btnSaveAndRestart_Click(object sender, EventArgs e)

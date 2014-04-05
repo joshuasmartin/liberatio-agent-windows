@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -14,14 +16,26 @@ namespace Liberatio.Agent.Tray
         [STAThread]
         static void Main()
         {
+            // Create Windows Event Source if it doesn't exist.
+            if (!EventLog.SourceExists("LiberatioAgent"))
+            {
+                EventLog.CreateEventSource("LiberatioAgent", "Application");
+                return;
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
             // the notify icon
+            var location = System.Reflection.Assembly.GetEntryAssembly().Location;
+            var pathToIcon = Path.Combine(Path.GetDirectoryName(location), "logo.ico");
+
             NotifyIcon notify = new NotifyIcon();
             notify.Text = "Liberatio Agent";
-            notify.Icon = new Icon("logo.ico");
+            notify.Icon = new Icon(pathToIcon);
             notify.MouseClick += new MouseEventHandler(notify_MouseClick);
+
+            EventLog.WriteEntry("LiberatioAgent", "set the icon");
 
             // build the menu
             ContextMenu menu = new ContextMenu();
@@ -42,10 +56,9 @@ namespace Liberatio.Agent.Tray
 
             // finally make the icon visible
             notify.Visible = true;
+            EventLog.WriteEntry("LiberatioAgent", "should be visible");
 
             Application.Run();
-
-            notify.Visible = false;
         }
 
         private static void notify_MouseClick(object sender, MouseEventArgs e)
