@@ -15,6 +15,9 @@ namespace Liberatio.Agent.Service
 
         public CommandManager()
         {
+            if (!LiberatioConfiguration.IsConnectedToInternet() || !LiberatioConfiguration.IsRegistered())
+                return;
+
             try
             {
                 string _authParams = string.Format("token={0}", LiberatioConfiguration.GetValue("communicationToken"));
@@ -35,12 +38,14 @@ namespace Liberatio.Agent.Service
 
         public void Start()
         {
-            _pusher.Connect();
+            if (_pusher != null)
+                _pusher.Connect();
         }
 
         public void Stop()
         {
-            _pusher.Disconnect();
+            if (_pusher != null)
+                _pusher.Disconnect();
         }
 
         /// <summary>
@@ -106,10 +111,11 @@ namespace Liberatio.Agent.Service
                     Process p;
                     string builtinShutdownPath = Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe");
 
-                    switch (s)
+                    switch (c["name"].ToString())
                     {
                         // Builtin - reboot the computer.
                         case "reboot":
+                            EventLog.WriteEntry("LiberatioAgent", "Reboot command received from Liberatio", EventLogEntryType.Information);
                             i = new ProcessStartInfo(builtinShutdownPath, "/r /c \"Liberatio has initiated a *reboot* of your computer - you have 1 minute.\" /t 60");
                             i.UseShellExecute = false;
                             i.RedirectStandardOutput = true;
@@ -129,6 +135,7 @@ namespace Liberatio.Agent.Service
 
                         // Builtin - shutdown the computer.
                         case "shutdown":
+                            EventLog.WriteEntry("LiberatioAgent", "Reboot command received from Liberatio", EventLogEntryType.Information);
                             i = new ProcessStartInfo(builtinShutdownPath, "/s /c \"Liberatio has initiated a *shutdown* of your computer - you have 1 minute.\" /t 60");
                             i.UseShellExecute = false;
                             i.RedirectStandardOutput = true;

@@ -37,70 +37,71 @@ namespace Liberatio.Agent.Service
 
             LiberatioConfiguration.CreateOrUpdateLiberatioUser();
 
+            // Calling method for debugging purposes ONLY.
+            LiberatioConfiguration.GetLiberatioUserPassword();
+
             // Verify that there is a valid uuid.
             LiberatioConfiguration.CheckOrUpdateUuid();
 
             // Attempt to discover role.
             LiberatioConfiguration.DiscoverRole();
 
-            // Setup the inventory, Windows update check, and update engine
-            // if the computer is connected to the Internet.
-            if (LiberatioConfiguration.IsConnectedToInternet())
+            // Check for a registration code.
+            LiberatioConfiguration.RegisterIfNecessary();
+
+            // Start the TriggerInventory timer.
+            try
             {
-                // Check for a registration code.
-                LiberatioConfiguration.RegisterIfNecessary();
+                // Perform inventory according to the interval specified.
+                var interval = LiberatioConfiguration.GetValue("inventoryIntervalInSeconds");
+                if ((interval.Length == 0) || (int.Parse(interval) < 30))
+                    throw new Exception("Invalid inventoryInterval. Verify that the interval is an integer.");
+                _timerInventory.Interval = int.Parse(interval) * 1000;
 
-                // Start the TriggerInventory timer.
-                try
-                {
-                    // Perform inventory according to the interval specified.
-                    var interval = LiberatioConfiguration.GetValue("inventoryIntervalInSeconds");
-                    if ((interval.Length == 0) || (int.Parse(interval) < 30))
-                        throw new Exception("Invalid inventoryInterval. Verify that the interval is an integer.");
-                    _timerInventory.Interval = int.Parse(interval) * 1000;
+                _timerInventory.Elapsed += new ElapsedEventHandler(TriggerInventory);
+                _timerInventory.Enabled = true;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
 
-                    _timerInventory.Elapsed += new ElapsedEventHandler(TriggerInventory);
-                    _timerInventory.Enabled = true;
-                }
-                catch (Exception exception)
-                {
-                    EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
-                    Environment.Exit(1);
-                }
+            // Start the TriggerUpdateManger timer.
+            try
+            {
+                // Perform any setup before using UpdateManager.
+                WindowsUpdater.Setup();
 
-                // Start the TriggerUpdateManger timer.
-                try
-                {
-                    // Perform any setup before using UpdateManager.
-                    WindowsUpdater.Setup();
+                // Check for needed updates every 60 seconds.
+                _timerWindowsUpdates.Interval = 60 * 1000;
 
-                    // Check for needed updates every 60 seconds.
-                    _timerWindowsUpdates.Interval = 60 * 1000;
+                _timerWindowsUpdates.Elapsed += new ElapsedEventHandler(TriggerUpdateManger);
+                _timerWindowsUpdates.Enabled = true;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
 
-                    _timerWindowsUpdates.Elapsed += new ElapsedEventHandler(TriggerUpdateManger);
-                    _timerWindowsUpdates.Enabled = true;
-                }
-                catch (Exception exception)
-                {
-                    EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
-                    Environment.Exit(1);
-                }
+            // Start the TriggerUpdateCheck timer.
+            try
+            {
+                // Check for updates every 60 seconds.
+                _timerUpdateEngine.Interval = 60 * 1000;
 
-                // Start the TriggerUpdateCheck timer.
-                try
-                {
-                    // Check for updates every 60 seconds.
-                    _timerUpdateEngine.Interval = 60 * 1000;
+                _timerUpdateEngine.Elapsed += new ElapsedEventHandler(TriggerUpdateCheck);
+                _timerUpdateEngine.Enabled = true;
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+                Environment.Exit(1);
+            }
 
-                    _timerUpdateEngine.Elapsed += new ElapsedEventHandler(TriggerUpdateCheck);
-                    _timerUpdateEngine.Enabled = true;
-                }
-                catch (Exception exception)
-                {
-                    EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
-                    Environment.Exit(1);
-                }
-
+            if (LiberatioConfiguration.IsConnectedToInternet() && LiberatioConfiguration.IsRegistered())
+            {
                 // Start listening for commands to execute.
                 _commandManager.Start();
             }
@@ -145,9 +146,12 @@ namespace Liberatio.Agent.Service
 
         private void TriggerInventory(object source, ElapsedEventArgs e)
         {
-            EventLog.WriteEntry("LiberatioAgent", "Performing inventory, and sending to Liberatio.com");
-            Inventory i = new Inventory();
-            i.Send();
+            // Only check if there is an Internet connection.
+            if (LiberatioConfiguration.IsConnectedToInternet() && LiberatioConfiguration.IsRegistered())
+            {
+                //EventLog.WriteEntry("LiberatioAgent", "Performing inventory, and sending to Liberatio.com");
+                new Inventory().Send();
+            }
         }
 
         private void TriggerUpdateManger(object source, ElapsedEventArgs e)
@@ -158,7 +162,11 @@ namespace Liberatio.Agent.Service
 
         private void TriggerUpdateCheck(object source, ElapsedEventArgs e)
         {
-            UpdateEngine.Update();
+            // Only check if there is an Internet connection.
+            if (LiberatioConfiguration.IsConnectedToInternet())
+            {
+                UpdateEngine.Update();
+            }
         }
 
         private void TriggerSystemCleanup(object source, ElapsedEventArgs e)

@@ -34,6 +34,7 @@
             this.lblConnectionStatus = new System.Windows.Forms.Label();
             this.btnConnect = new System.Windows.Forms.Button();
             this.pnlHeader = new System.Windows.Forms.Panel();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.lblVersionNumber = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lblRole = new System.Windows.Forms.Label();
@@ -43,13 +44,12 @@
             this.btnSaveAndRestart = new System.Windows.Forms.Button();
             this.lblUuid = new System.Windows.Forms.Label();
             this.txtUuid = new System.Windows.Forms.TextBox();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureWaiting = new System.Windows.Forms.PictureBox();
             this.pictureStatus = new System.Windows.Forms.PictureBox();
             this.statusStrip1.SuspendLayout();
             this.pnlHeader.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureWaiting)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureStatus)).BeginInit();
             this.SuspendLayout();
@@ -100,6 +100,16 @@
             this.pnlHeader.Name = "pnlHeader";
             this.pnlHeader.Size = new System.Drawing.Size(624, 86);
             this.pnlHeader.TabIndex = 17;
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = global::Liberatio.Agent.Tray.Properties.Resources.banner_logo;
+            this.pictureBox2.Location = new System.Drawing.Point(21, 21);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(160, 44);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox2.TabIndex = 20;
+            this.pictureBox2.TabStop = false;
             // 
             // lblVersionNumber
             // 
@@ -172,6 +182,7 @@
             this.btnSaveAndRestart.TabIndex = 15;
             this.btnSaveAndRestart.Text = "Save Changes";
             this.btnSaveAndRestart.UseVisualStyleBackColor = true;
+            this.btnSaveAndRestart.Click += new System.EventHandler(this.btnSaveAndRestart_Click);
             // 
             // lblUuid
             // 
@@ -189,16 +200,6 @@
             this.txtUuid.ReadOnly = true;
             this.txtUuid.Size = new System.Drawing.Size(215, 20);
             this.txtUuid.TabIndex = 13;
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = global::Liberatio.Agent.Tray.Properties.Resources.banner_logo;
-            this.pictureBox2.Location = new System.Drawing.Point(21, 21);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(160, 44);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox2.TabIndex = 20;
-            this.pictureBox2.TabStop = false;
             // 
             // pictureWaiting
             // 
@@ -244,9 +245,9 @@
             this.statusStrip1.PerformLayout();
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureWaiting)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureStatus)).EndInit();
             this.ResumeLayout(false);

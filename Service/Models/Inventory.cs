@@ -151,7 +151,8 @@ namespace Liberatio.Agent.Service.Models
             try
             {
                 // get installed applications on 32 bit machines
-                using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(key32))
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(key32);
+                if (key != null)
                 {
                     foreach (String subkeyName in key.GetSubKeyNames())
                     {
@@ -168,10 +169,19 @@ namespace Liberatio.Agent.Service.Models
                             }
                         }
                     }
+                    key.Close();
                 }
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
 
+            try
+            {
                 // get installed applications on 64 bit machines
-                using (Microsoft.Win32.RegistryKey key = Registry.LocalMachine.OpenSubKey(key64))
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(key64);
+                if (key != null)
                 {
                     foreach (String subkeyName in key.GetSubKeyNames())
                     {
@@ -188,6 +198,7 @@ namespace Liberatio.Agent.Service.Models
                             }
                         }
                     }
+                    key.Close();
                 }
             }
             catch (Exception exception)
@@ -210,6 +221,7 @@ namespace Liberatio.Agent.Service.Models
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Capacity,FormFactor,Manufacturer,MemoryType,Speed FROM Win32_PhysicalMemory");
                 foreach (ManagementObject os in searcher.Get())
                 {
+                    EventLog.WriteEntry("LiberatioAgent", "Adding memory", EventLogEntryType.Information);
                     list.Add(new Memory(os["Capacity"].ToString(),
                                         os["FormFactor"].ToString(),
                                         os["Manufacturer"].ToString(),

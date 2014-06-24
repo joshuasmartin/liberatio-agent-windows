@@ -70,10 +70,6 @@ namespace Liberatio.Agent.Service
                         // Extract the update file and perform install.
                         PerformInstall(latestVersion, updateSha2sum);
                     }
-                    else
-                    {
-                        EventLog.WriteEntry("LiberatioAgent", "Liberatio is up-to-date", EventLogEntryType.Information);
-                    }
                 }
             }
             catch (Exception exception)

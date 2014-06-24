@@ -108,17 +108,16 @@ namespace Liberatio.Agent.Service
         /// </summary>
         public static void RegisterIfNecessary()
         {
-            // Exit the application if there is no code and no token.
-            // The Agent will never be able to make contact with the
-            // server without one or the other.
+            // Return if there is no code and no token. The Agent will never be
+            // able to make contact with the server without one or the other.
             if ((GetValue("registrationCode").Trim().Length == 0) &&
                 (GetValue("communicationToken").Trim().Length == 0))
             {
                 EventLog.WriteEntry("LiberatioAgent",
                     "No communcations token and no registration code. " +
                     "Provide the registration code for a token to be " +
-                    "retrieved or a valid token.", EventLogEntryType.Error);
-                Environment.Exit(1);
+                    "retrieved or a valid token.", EventLogEntryType.Warning);
+                return;
             }
 
             // Return if there is no registration code.
@@ -290,15 +289,18 @@ namespace Liberatio.Agent.Service
                 // encrypted using DPAPI and will be accessible to the
                 // LocalSystem user only.
                 byte[] toEncrypt = UnicodeEncoding.ASCII.GetBytes(password);
-                byte[] entropy = CreateRandomEntropy();
+                byte[] entropy = new byte[0];
 
                 var location = System.Reflection.Assembly.GetEntryAssembly().Location;
                 var pathToPassword = Path.Combine(Path.GetDirectoryName(location), "auth.dat");
 
                 // Encrypt a copy of the data to the stream.
+                File.Delete(pathToPassword);
                 FileStream stream = new FileStream(pathToPassword, FileMode.OpenOrCreate);
                 //int bytesWritten = EncryptDataToStream(toEncrypt, entropy, DataProtectionScope.CurrentUser, stream);
-                int bytesWritten = EncryptDataToStream(toEncrypt, DataProtectionScope.CurrentUser, stream);
+                int bytesWritten = EncryptDataToStream(toEncrypt, entropy, DataProtectionScope.CurrentUser, stream);
+                EventLog.WriteEntry("LiberatioAgent", "bytes written is " + bytesWritten, EventLogEntryType.Information);
+                stream.Flush();
                 stream.Close();
             }
             catch (Exception exception)
@@ -326,10 +328,12 @@ namespace Liberatio.Agent.Service
                     memoryStream.Position = 0;
                     fileStream.CopyTo(memoryStream);
                     var bytesEncrypted = memoryStream.ToArray();
+                    byte[] entropy = new byte[0];
+                    EventLog.WriteEntry("LiberatioAgent", "bytes encrypted to read is " + bytesEncrypted.Length, EventLogEntryType.Information);
 
                     //byte[] bytesDecrypted = DecryptDataFromStream(entropy, DataProtectionScope.CurrentUser,
                     //                                                fileStream, bytesEncrypted);
-                    byte[] bytesDecrypted = DecryptDataFromStream(DataProtectionScope.CurrentUser,
+                    byte[] bytesDecrypted = DecryptDataFromStream(entropy, DataProtectionScope.CurrentUser,
                                                                     fileStream, bytesEncrypted.Length);
 
                     insecurePassword = UnicodeEncoding.ASCII.GetString(bytesDecrypted).ToCharArray();
@@ -430,8 +434,7 @@ namespace Liberatio.Agent.Service
             return entropy;
         }
 
-        //private static int EncryptDataToStream(byte[] Buffer, byte[] Entropy, DataProtectionScope Scope, Stream S)
-        private static int EncryptDataToStream(byte[] Buffer, DataProtectionScope Scope, Stream S)
+        private static int EncryptDataToStream(byte[] Buffer, byte[] Entropy, DataProtectionScope Scope, Stream S)
         {
             if (Buffer.Length <= 0)
                 throw new ArgumentException("Buffer");
@@ -454,17 +457,16 @@ namespace Liberatio.Agent.Service
             if (S.CanWrite && encrptedData != null)
             {
                 S.Write(encrptedData, 0, encrptedData.Length);
+                S.Flush();
 
                 length = encrptedData.Length;
             }
 
             // Return the length that was written to the stream.  
             return length;
-
         }
 
-        //private static byte[] DecryptDataFromStream(byte[] Entropy, DataProtectionScope Scope, Stream S, int Length)
-        private static byte[] DecryptDataFromStream(DataProtectionScope Scope, Stream S, int Length)
+        private static byte[] DecryptDataFromStream(byte[] Entropy, DataProtectionScope Scope, Stream S, int Length)
         {
             if (S == null)
                 throw new ArgumentNullException("S");
@@ -475,26 +477,19 @@ namespace Liberatio.Agent.Service
             //if (Entropy.Length <= 0)
             //    throw new ArgumentException("Entropy");
 
-
-
             byte[] inBuffer = new byte[Length];
-            byte[] outBuffer;
 
             // Read the encrypted data from a stream. 
             if (S.CanRead)
             {
                 S.Read(inBuffer, 0, Length);
 
-                //outBuffer = ProtectedData.Unprotect(inBuffer, Entropy, Scope);
-                outBuffer = ProtectedData.Unprotect(inBuffer, null, Scope);
+                return ProtectedData.Unprotect(inBuffer, null, Scope);
             }
             else
             {
                 throw new IOException("Could not read the stream.");
             }
-
-            // Return the length that was written to the stream.  
-            return outBuffer;
         }
     }
 }
