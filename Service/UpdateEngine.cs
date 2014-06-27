@@ -1,4 +1,5 @@
-﻿using Ionic.Zip;
+﻿using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -159,21 +160,62 @@ namespace Liberatio.Agent.Service
             string extractedMsiFilePath = Path.Combine(extractedFolderPath, "setup.msi");
 
             // Extract the update file to a temporary directory.
-            using (ZipFile zip = ZipFile.Read(zipPath))
+            ZipFile zf = null;
+
+            try
             {
-                foreach (ZipEntry e in zip)
+                FileStream fs = File.OpenRead(zipPath);
+                zf = new ZipFile(fs);
+
+                foreach (ZipEntry zipEntry in zf)
                 {
-                    e.Extract(extractedFolderPath, ExtractExistingFileAction.OverwriteSilently);
+                    if (!zipEntry.IsFile)
+                    {
+                        // Ignore directories.
+                        continue;
+                    }
+
+                    String entryFileName = zipEntry.Name;
+
+                    // Unzip the file in 4K chunks to save memory.
+                    byte[] buffer = new byte[4096];
+                    Stream zipStream = zf.GetInputStream(zipEntry);
+
+                    // Manipulate the output filename here as desired.
+                    String fullZipToPath = Path.Combine(extractedFolderPath, entryFileName);
+                    string directoryName = Path.GetDirectoryName(fullZipToPath);
+                    if (directoryName.Length > 0)
+                        Directory.CreateDirectory(directoryName);
+
+                    using (FileStream streamWriter = File.Create(entryFileName))
+                    {
+                        StreamUtils.Copy(zipStream, streamWriter, buffer);
+                    }
+                }
+
+                // Start the setup.exe process with the MSI file path as an argument.
+                ProcessStartInfo info = new ProcessStartInfo(extractedSetupFilePath, extractedMsiFilePath);
+                info.UseShellExecute = false;
+
+                Process process = new Process();
+                process.StartInfo = info;
+                process.Start();
+            }
+            catch (Exception exception)
+            {
+                EventLog.WriteEntry("LiberatioAgent", "Failure to install update", EventLogEntryType.Error);
+                EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Error);
+            }
+            finally
+            {
+                // Release resources whether the operation succeeds or not.
+                // Shuts down the underlying stream.
+                if (zf != null)
+                {
+                    zf.IsStreamOwner = true;
+                    zf.Close();
                 }
             }
-
-            // Start the setup.exe process with the MSI file path as an argument.
-            ProcessStartInfo info = new ProcessStartInfo(extractedSetupFilePath, extractedMsiFilePath);
-            info.UseShellExecute = false;
-
-            Process process = new Process();
-            process.StartInfo = info;
-            process.Start();
         }
 
         /// <summary>

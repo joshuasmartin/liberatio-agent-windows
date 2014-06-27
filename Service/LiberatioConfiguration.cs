@@ -241,6 +241,13 @@ namespace Liberatio.Agent.Service
             return found;
         }
 
+        public static string GetApplicationDirectory()
+        {
+            string applicationFilePath = System.Reflection.Assembly.GetEntryAssembly().Location;
+            string applicationDirectory = Path.GetDirectoryName(applicationFilePath);
+            return applicationDirectory;
+        }
+
         /// <summary>
         /// Creates the "liberatio" Administrator account on the system if it
         /// does not exist already. If it does exist, it changes the password.
@@ -262,7 +269,7 @@ namespace Liberatio.Agent.Service
                 // that never expires.
                 if (userPrincipal == null)
                 {
-                    userPrincipal = new UserPrincipal(context, "liberatio", password, false);
+                    userPrincipal = new UserPrincipal(context, "liberatio", password, true);
                     userPrincipal.UserCannotChangePassword = true;
                     userPrincipal.PasswordNeverExpires = false;
                     userPrincipal.Save();
@@ -271,7 +278,7 @@ namespace Liberatio.Agent.Service
                 {
                     userPrincipal.UserCannotChangePassword = true;
                     userPrincipal.PasswordNeverExpires = false;
-                    userPrincipal.Enabled = false;
+                    userPrincipal.Enabled = true;
                     userPrincipal.SetPassword(password);
                     userPrincipal.Save();
                 }
@@ -312,10 +319,11 @@ namespace Liberatio.Agent.Service
             }
         }
 
-        public static SecureString GetLiberatioUserPassword()
+        public static string GetLiberatioUserPassword()
         {
-            var securePassword = new SecureString();
-            char[] insecurePassword;
+            //var securePassword = new SecureString();
+            //char[] insecurePassword;
+            string insecurePassword = "";
 
             try
             {
@@ -323,21 +331,15 @@ namespace Liberatio.Agent.Service
                 var path = Path.Combine(Path.GetDirectoryName(location), "auth.dat");
 
                 using (FileStream fileStream = new FileStream(path, FileMode.Open))
-                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    memoryStream.Position = 0;
-                    fileStream.CopyTo(memoryStream);
-                    var bytesEncrypted = memoryStream.ToArray();
+                    // Use a blank entropy.
                     byte[] entropy = new byte[0];
-                    EventLog.WriteEntry("LiberatioAgent", "bytes encrypted to read is " + bytesEncrypted.Length, EventLogEntryType.Information);
-
-                    //byte[] bytesDecrypted = DecryptDataFromStream(entropy, DataProtectionScope.CurrentUser,
-                    //                                                fileStream, bytesEncrypted);
                     byte[] bytesDecrypted = DecryptDataFromStream(entropy, DataProtectionScope.CurrentUser,
-                                                                    fileStream, bytesEncrypted.Length);
+                                                                    fileStream, (int)fileStream.Length);
 
-                    insecurePassword = UnicodeEncoding.ASCII.GetString(bytesDecrypted).ToCharArray();
-                    foreach (char c in insecurePassword) securePassword.AppendChar(c);
+                    insecurePassword = UnicodeEncoding.ASCII.GetString(bytesDecrypted);
+                    //insecurePassword = UnicodeEncoding.ASCII.GetString(bytesDecrypted).ToCharArray();
+                    //foreach (char c in insecurePassword) securePassword.AppendChar(c);
                 }
             }
             catch (Exception exception)
@@ -346,10 +348,10 @@ namespace Liberatio.Agent.Service
             }
 
             // Ensure insecure password is deleted from memory.
-            insecurePassword = null;
-            GC.Collect();
+            //insecurePassword = null;
+            //GC.Collect();
 
-            return securePassword;
+            return insecurePassword;
         }
 
         /// <summary>
@@ -451,7 +453,7 @@ namespace Liberatio.Agent.Service
 
             // Encrypt the data in memory. The result is stored in the same same array as the original data.
             //byte[] encrptedData = ProtectedData.Protect(Buffer, Entropy, Scope);
-            byte[] encrptedData = ProtectedData.Protect(Buffer, null, Scope);
+            byte[] encrptedData = ProtectedData.Protect(Buffer, Entropy, Scope);
 
             // Write the encrypted data to a stream. 
             if (S.CanWrite && encrptedData != null)
@@ -484,7 +486,7 @@ namespace Liberatio.Agent.Service
             {
                 S.Read(inBuffer, 0, Length);
 
-                return ProtectedData.Unprotect(inBuffer, null, Scope);
+                return ProtectedData.Unprotect(inBuffer, Entropy, Scope);
             }
             else
             {

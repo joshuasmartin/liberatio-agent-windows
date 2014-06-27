@@ -65,7 +65,8 @@
         <File Source="$(var.Service.TargetDir)\PusherClient.dll" />
         <File Source="$(var.Service.TargetDir)\RestSharp.dll" />
         <File Source="$(var.Service.TargetDir)\WebSocket4Net.dll" />
-        <File Source="$(var.Service.TargetDir)\Ionic.Zip.dll" />
+        <File Source="$(var.Service.TargetDir)\ICSharpCode.SharpZipLib.dll" />
+        <File Source="$(var.Service.TargetDir)\paexec.exe" />
         
         <!-- Installs the Service -->
         <ServiceInstall Id="LiberatioServiceInstall" Type="ownProcess" Name="LiberatioServiceExe"

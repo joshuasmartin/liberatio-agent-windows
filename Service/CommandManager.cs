@@ -98,73 +98,107 @@ namespace Liberatio.Agent.Service
 
             _cmdChannel.Bind("commands.run", (dynamic data) =>
             {
-                EventLog.WriteEntry("LiberatioAgent", "Data is " + data, EventLogEntryType.Information);
-                JObject message = (JObject)JsonConvert.DeserializeObject(Convert.ToString(data));
-                JArray commands = (JArray)message["commands"];
-
-                foreach (JToken c in commands)
+                try
                 {
-                    string s = c.ToString();
-                    EventLog.WriteEntry("LiberatioAgent", "command is " + s, EventLogEntryType.Information);
+                    EventLog.WriteEntry("LiberatioAgent", "Data is " + data, EventLogEntryType.Information);
+                    JObject message = (JObject)JsonConvert.DeserializeObject(Convert.ToString(data));
+                    JArray commands = (JArray)message["commands"];
 
-                    ProcessStartInfo i;
-                    Process p;
-                    string builtinShutdownPath = Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe");
-
-                    switch (c["name"].ToString())
+                    foreach (JToken c in commands)
                     {
-                        // Builtin - reboot the computer.
-                        case "reboot":
-                            EventLog.WriteEntry("LiberatioAgent", "Reboot command received from Liberatio", EventLogEntryType.Information);
-                            i = new ProcessStartInfo(builtinShutdownPath, "/r /c \"Liberatio has initiated a *reboot* of your computer - you have 1 minute.\" /t 60");
+                        string s = c.ToString();
+
+                        ProcessStartInfo i;
+                        Process p;
+                        string shutdownExecutable = Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe");
+                        
+                        string paexecExecutable = string.Format(@"{0}\paexec.exe", LiberatioConfiguration.GetApplicationDirectory());
+                        string paexecArguments = string.Format("-u liberatio -p \"{0}\"", LiberatioConfiguration.GetLiberatioUserPassword());
+                        string commandWithArguments = "";
+
+                        // Determine if this is a custom command or a builtin command.
+                        // Custom commands do not use the "name" property.
+                        if (c["name"] != null)
+                        {
+                            switch (c["name"].ToString())
+                            {
+                                // Builtin - reboot the computer.
+                                case "reboot":
+                                    EventLog.WriteEntry("LiberatioAgent", "Reboot command received from Liberatio", EventLogEntryType.Information);
+
+                                    commandWithArguments = string.Format("{0} /r /c \"Liberatio has initiated a *reboot* of your computer - you have 1 minute.\" /t 60", shutdownExecutable);
+
+                                    i = new ProcessStartInfo(paexecExecutable, string.Format("{0} {1}", paexecArguments, commandWithArguments));
+                                    i.UseShellExecute = false;
+                                    i.RedirectStandardOutput = true;
+                                    i.RedirectStandardError = true;
+
+                                    p = new Process();
+                                    p.StartInfo = i;
+                                    p.OutputDataReceived += new DataReceivedEventHandler(CaptureOutput);
+                                    p.ErrorDataReceived += new DataReceivedEventHandler(CaptureError);
+                                    p.Start();
+                                    p.BeginOutputReadLine();
+                                    p.BeginErrorReadLine();
+                                    break;
+
+                                // Builtin - shutdown the computer.
+                                case "shutdown":
+                                    EventLog.WriteEntry("LiberatioAgent", "Shutdown command received from Liberatio", EventLogEntryType.Information);
+
+                                    commandWithArguments = string.Format("{0} /s /c \"Liberatio has initiated a *shutdown* of your computer - you have 1 minute.\" /t 60", shutdownExecutable);
+
+                                    i = new ProcessStartInfo(paexecExecutable, string.Format("{0} {1}", paexecArguments, commandWithArguments));
+                                    i.UseShellExecute = false;
+                                    i.RedirectStandardOutput = true;
+                                    i.RedirectStandardError = true;
+
+                                    p = new Process();
+                                    p.StartInfo = i;
+                                    p.OutputDataReceived += new DataReceivedEventHandler(CaptureOutput);
+                                    p.ErrorDataReceived += new DataReceivedEventHandler(CaptureError);
+                                    p.Start();
+                                    p.BeginOutputReadLine();
+                                    p.BeginErrorReadLine();
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            EventLog.WriteEntry("LiberatioAgent", "Custom command received from Liberatio", EventLogEntryType.Information);
+
+                            i = new ProcessStartInfo(paexecExecutable, string.Format("{0} {1} {2}", paexecArguments, c["executable"].ToString(), c["arguments"].ToString()));
                             i.UseShellExecute = false;
                             i.RedirectStandardOutput = true;
                             i.RedirectStandardError = true;
-                            i.UserName = "liberatio";
-                            i.Password = LiberatioConfiguration.GetLiberatioUserPassword();
 
                             p = new Process();
                             p.StartInfo = i;
-                            p.OutputDataReceived += CaptureOutput;
-                            p.ErrorDataReceived += CaptureError;
+                            p.OutputDataReceived += new DataReceivedEventHandler(CaptureOutput);
+                            p.ErrorDataReceived += new DataReceivedEventHandler(CaptureError);
                             p.Start();
                             p.BeginOutputReadLine();
                             p.BeginErrorReadLine();
-                            p.WaitForExit();
-                            break;
-
-                        // Builtin - shutdown the computer.
-                        case "shutdown":
-                            EventLog.WriteEntry("LiberatioAgent", "Reboot command received from Liberatio", EventLogEntryType.Information);
-                            i = new ProcessStartInfo(builtinShutdownPath, "/s /c \"Liberatio has initiated a *shutdown* of your computer - you have 1 minute.\" /t 60");
-                            i.UseShellExecute = false;
-                            i.RedirectStandardOutput = true;
-                            i.RedirectStandardError = true;
-                            i.UserName = "liberatio";
-                            i.Password = LiberatioConfiguration.GetLiberatioUserPassword();
-
-                            p = new Process();
-                            p.StartInfo = i;
-                            p.OutputDataReceived += CaptureOutput;
-                            p.ErrorDataReceived += CaptureError;
-                            p.Start();
-                            p.BeginOutputReadLine();
-                            p.BeginErrorReadLine();
-                            p.WaitForExit();
-                            break;
+                        }
                     }
+                }
+                catch (Exception exception)
+                {
+                    EventLog.WriteEntry("LiberatioAgent", exception.ToString(), EventLogEntryType.Information);
                 }
             });
         }
 
         private void CaptureOutput(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
-            EventLog.WriteEntry("LiberatioAgent", e.Data, EventLogEntryType.Information);
+            if (!String.IsNullOrEmpty(e.Data))
+                EventLog.WriteEntry("LiberatioAgent", e.Data, EventLogEntryType.Information);
         }
 
         private void CaptureError(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
-            EventLog.WriteEntry("LiberatioAgent", e.Data, EventLogEntryType.Warning);
+            if (!String.IsNullOrEmpty(e.Data))
+                EventLog.WriteEntry("LiberatioAgent", e.Data, EventLogEntryType.Warning);
         }
 
         // var triggered = _cmdChannel.trigger('client-someeventname', { your: data });
