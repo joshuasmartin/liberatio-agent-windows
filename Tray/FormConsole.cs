@@ -74,6 +74,9 @@ namespace Liberatio.Agent.Tray
                 if (pipeProxy.IsRegistered())
                     status = "Registered";
 
+                ((IClientChannel)pipeProxy).Close();
+                pipeProxy = null;
+
                 // Populate the user interface with the collected values.
                 this.Invoke(new PopulateConfigurationDelegate(populateConfiguration), new object[] { uuid, location, role, status });
             }
@@ -145,6 +148,9 @@ namespace Liberatio.Agent.Tray
             pipeProxy.UpdateConfiguration("uuid", txtUuid.Text);
             pipeProxy.UpdateConfiguration("location", txtLocation.Text);
             pipeProxy.UpdateConfiguration("role", cmbRole.Text);
+
+            ((IClientChannel)pipeProxy).Close();
+            pipeProxy = null;
 
             // restart the service to refresh the configuration
             RestartService();

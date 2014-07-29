@@ -65,7 +65,7 @@ namespace Liberatio.Agent.Tray.Properties {
         /// </summary>
         internal static System.Drawing.Bitmap banner_logo {
             get {
-                object obj = ResourceManager.GetObject("banner-logo", resourceCulture);
+                object obj = ResourceManager.GetObject("banner_logo", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -129,7 +129,7 @@ namespace Liberatio.Agent.Service
             // will be sent in all communique to authenticate the Agent.
             try
             {
-                var client = new RestClient("http://liberatio.herokuapp.com");
+                var client = new RestClient("http://www.getliberatio.com");
                 var request = new RestRequest("nodes/register.json", Method.POST);
 
                 request.AddParameter("uuid", GetValue("uuid"), ParameterType.QueryString);
@@ -221,7 +221,7 @@ namespace Liberatio.Agent.Service
 
             try
             {
-                var client = new RestClient("http://liberatio.herokuapp.com");
+                var client = new RestClient("http://www.getliberatio.com");
                 var request = new RestRequest("nodes/registered.json", Method.GET);
 
                 request.AddParameter("uuid", GetValue("uuid"), ParameterType.QueryString);

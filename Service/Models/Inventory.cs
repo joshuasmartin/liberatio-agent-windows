@@ -52,7 +52,7 @@ namespace Liberatio.Agent.Service.Models
             try
             {
                 // client
-                var client = new RestClient("http://liberatio.herokuapp.com");
+                var client = new RestClient("http://www.getliberatio.com");
                 var request = new RestRequest("inventories.json", Method.POST);
 
                 // payload
@@ -296,8 +296,8 @@ namespace Liberatio.Agent.Service.Models
         private List<Update> getUpdates()
         {
             List<Update> all = new List<Update>();
-            all.AddRange(WindowsUpdater.Installed);
-            all.AddRange(WindowsUpdater.Needed);
+            //all.AddRange(WindowsUpdater.Installed);
+            //all.AddRange(WindowsUpdater.Needed);
             return all;
         }
 

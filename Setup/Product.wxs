@@ -35,6 +35,12 @@
 		<Feature Id="MainApplication" Title="Liberatio Agent" Description="The complete package." Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
+
+    <CustomAction Id="LaunchTray" FileKey="LiberatioTrayExeFile" ExeCommand="/initial" Return="asyncNoWait" />
+    <InstallExecuteSequence>
+      <Custom Action="LaunchTray" After="InstallFinalize">NOT Installed</Custom>
+    </InstallExecuteSequence>
+    
 	</Product>
 
 	<Fragment>
@@ -71,7 +77,9 @@
         <!-- Installs the Service -->
         <ServiceInstall Id="LiberatioServiceInstall" Type="ownProcess" Name="LiberatioServiceExe"
                         DisplayName="Liberatio Agent"
-                        Start="auto" Account="LocalSystem" ErrorControl="normal" />
+                        Start="auto" Account="LocalSystem" ErrorControl="normal">
+          <ServiceDependency Id="LanmanServer" Group="no" />
+        </ServiceInstall>
         
         <!-- Starts the Service -->
         <ServiceControl Id="LiberatioServiceControl"
@@ -98,7 +106,7 @@
 
       <!-- Registry special accounts key for hiding the user on the Logon screen. -->
       <Component Id="SpecialAccountsRegistryKey" Guid="CD2A0FF3-A565-4757-ADEC-5FA78331AF61">
-        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows NT\CurrentVersion\WinLogon\SpecialAccounts"
+        <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows NT\CurrentVersion\WinLogon\SpecialAccounts\UserList"
                         KeyPath="yes" Name="liberatio"
                         Value="0" Type="integer" />
       </Component>

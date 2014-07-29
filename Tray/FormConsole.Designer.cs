@@ -96,6 +96,7 @@
             this.pnlHeader.BackColor = System.Drawing.Color.Gray;
             this.pnlHeader.Controls.Add(this.pictureBox2);
             this.pnlHeader.Controls.Add(this.lblVersionNumber);
+            this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(0, 0);
             this.pnlHeader.Name = "pnlHeader";
             this.pnlHeader.Size = new System.Drawing.Size(624, 86);
@@ -232,10 +233,7 @@
             this.Controls.Add(this.btnConnect);
             this.Controls.Add(this.lblConnectionStatus);
             this.Controls.Add(this.statusStrip1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(640, 480);
             this.MinimumSize = new System.Drawing.Size(640, 480);
             this.Name = "FormConsole";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

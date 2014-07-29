@@ -10,12 +10,20 @@ namespace Liberatio.Agent.Tray
 {
     static class Program
     {
+
+        private static NotifyIcon notify = new NotifyIcon();
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
         {
+            String thisprocessname = Process.GetCurrentProcess().ProcessName;
+
+            if (Process.GetProcesses().Count(p => p.ProcessName == thisprocessname) > 1)
+                return;  
+
             // Create Windows Event Source if it doesn't exist.
             if (!EventLog.SourceExists("LiberatioAgent"))
             {
@@ -26,16 +34,15 @@ namespace Liberatio.Agent.Tray
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            Application.ApplicationExit += new EventHandler(OnApplicationExit);
+
             // the notify icon
             var location = System.Reflection.Assembly.GetEntryAssembly().Location;
             var pathToIcon = Path.Combine(Path.GetDirectoryName(location), "logo.ico");
 
-            NotifyIcon notify = new NotifyIcon();
             notify.Text = "Liberatio Agent";
             notify.Icon = new Icon(pathToIcon);
             notify.MouseClick += new MouseEventHandler(notify_MouseClick);
-
-            EventLog.WriteEntry("LiberatioAgent", "set the icon");
 
             // build the menu
             ContextMenu menu = new ContextMenu();
@@ -56,7 +63,17 @@ namespace Liberatio.Agent.Tray
 
             // finally make the icon visible
             notify.Visible = true;
-            EventLog.WriteEntry("LiberatioAgent", "should be visible");
+
+            bool initial = false;
+            string[] arguments = Environment.GetCommandLineArgs();
+            foreach (string arg in arguments)
+            {
+                if (arg == "/initial")
+                    initial = true;
+            }
+
+            if (initial)
+                new FormSplash().Show();
 
             Application.Run();
         }
@@ -65,7 +82,7 @@ namespace Liberatio.Agent.Tray
         {
             if (e.Button == MouseButtons.Left)
             {
-                new FormConsole().Show();
+                new FormSplash().Show();
             }
         }
 
@@ -76,7 +93,16 @@ namespace Liberatio.Agent.Tray
 
         private static void itemShowConsole_Click(object Sender, EventArgs e)
         {
-            new FormConsole().Show();
+            new FormSplash().Show();
+        }
+
+        private static void OnApplicationExit(object sender, EventArgs e)
+        {
+            try
+            {
+                notify.Dispose();
+            }
+            catch { }
         }
     }
 }

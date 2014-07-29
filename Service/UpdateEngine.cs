@@ -25,7 +25,7 @@ namespace Liberatio.Agent.Service
                 // Make sure update cache directory exists before continuing.
                 Directory.CreateDirectory(applicationCacheDirectory);
 
-                var client = new RestClient("http://liberatio.herokuapp.com");
+                var client = new RestClient("http://www.getliberatio.com");
                 var request = new RestRequest("/au/latest.json", Method.GET);
 
                 // execute the request

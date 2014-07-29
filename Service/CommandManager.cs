@@ -21,7 +21,7 @@ namespace Liberatio.Agent.Service
             try
             {
                 string _authParams = string.Format("token={0}", LiberatioConfiguration.GetValue("communicationToken"));
-                string _authUrl = "http://liberatio.herokuapp.com/pusher/auth?token=" + LiberatioConfiguration.GetValue("communicationToken"); //HttpUtility.UrlEncode(_authParams);
+                string _authUrl = "http://www.getliberatio.com/pusher/auth?token=" + LiberatioConfiguration.GetValue("communicationToken"); //HttpUtility.UrlEncode(_authParams);
 
                 EventLog.WriteEntry("LiberatioAgent", "Attempting to connect", EventLogEntryType.Information);
                 _pusher = new Pusher("b64eb9cae3befce08a2f", new PusherOptions()
@@ -167,8 +167,9 @@ namespace Liberatio.Agent.Service
                         {
                             EventLog.WriteEntry("LiberatioAgent", "Custom command received from Liberatio", EventLogEntryType.Information);
 
-                            i = new ProcessStartInfo(paexecExecutable, string.Format("{0} {1} {2}", paexecArguments, c["executable"].ToString(), c["arguments"].ToString()));
+                            i = new ProcessStartInfo(paexecExecutable, string.Format("{0} {1}", paexecArguments, c["executable"].ToString()));
                             i.UseShellExecute = false;
+                            i.WorkingDirectory = Environment.ExpandEnvironmentVariables(@"%windir%\system32");
                             i.RedirectStandardOutput = true;
                             i.RedirectStandardError = true;
 
